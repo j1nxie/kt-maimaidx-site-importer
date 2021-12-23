@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name     kt-wacca-site-importer
-// @version  0.0.1
+// @version  0.0.2
 // @grant    none
 // @author   cg505
 // @include  https://wacca.marv-games.jp/web/*
