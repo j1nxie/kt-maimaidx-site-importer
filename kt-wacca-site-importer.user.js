@@ -151,7 +151,7 @@ async function submitScores(scores) {
     meta: {
       game: "wacca",
       playtype: "Single",
-      service: "cg-marv-site",
+      service: "wacca-site-importer",
     },
     scores,
   }
