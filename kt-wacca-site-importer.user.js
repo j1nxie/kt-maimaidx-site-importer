@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name     kt-wacca-site-importer
-// @version  0.0.2
-// @grant    none
+// @version  0.1.0
+// @grant    GM.xmlHttpRequest
+// @connect  kamaitachi.xyz
 // @author   cg505
 // @include  https://wacca.marv-games.jp/web/*
 // ==/UserScript==
@@ -25,6 +26,16 @@ const KT_BASE_URL = KT_CONFIGS[KT_SELECTED_CONFIG].baseUrl
 const KT_CLIENT_ID = KT_CONFIGS[KT_SELECTED_CONFIG].clientId
 const LS_API_KEY_KEY = "__ktimport__api-key"
 
+function requestPromise(details) {
+  return new Promise((resolve, reject) => GM.xmlHttpRequest({
+    responseType: "json",
+    onload: resolve,
+    onabort: reject,
+    onerror: reject,
+    ...details
+  }))
+}
+
 function getApiKey() {
   return localStorage.getItem(`${LS_API_KEY_KEY}_${KT_SELECTED_CONFIG}`)
 }
@@ -36,13 +47,13 @@ function setApiKey(value) {
 function setupApiKey() {
   window.open(`${KT_BASE_URL}/client-file-flow/${KT_CLIENT_ID}`)
   const inputHtml = `
-		<div id="api-key-setup" style="background-color: #fff">
-		  <form id="api-key-form">
-				<input type="text" id="api-key-form-key" placeholder="Copy API Key here"/>
-				<input type="submit" value="Save"/>
-			</form>
-		</div>
-	`
+    <div id="api-key-setup" style="background-color: #fff">
+      <form id="api-key-form">
+        <input type="text" id="api-key-form-key" placeholder="Copy API Key here"/>
+        <input type="submit" value="Save"/>
+      </form>
+    </div>
+  `
   document.querySelector("header").insertAdjacentHTML("afterend", inputHtml)
 
   document.querySelector("#api-key-setup").addEventListener("submit", submitApiKey)
@@ -62,10 +73,10 @@ function addNav() {
   const topNode = document.querySelector("header")
   const hasApiKey = !!getApiKey()
   let apiKeyText = `
-		<p style="color: #fff; text-align: center;">
-			You don't have an API Key set up. Please \"Set up an API Key\" before proceeding.
-		</p>
-	`
+    <p style="color: #fff; text-align: center;">
+      You don't have an API Key set up. Please \"Set up an API Key\" before proceeding.
+    </p>
+  `
   if (hasApiKey) {
     apiKeyText = ""
   }
@@ -75,10 +86,10 @@ function addNav() {
   }
   const navHtml = `
     <div style="background-color: #000">
-			${apiKeyText}
+      ${apiKeyText}
       <a href="/web/history">Jump to recent score import (preferred)</a><br />
       <a href="/web/music">Jump to PB import</a><br />
-			${apiKeyLink}
+      ${apiKeyLink}
     </div>
   `
   topNode.insertAdjacentHTML("afterend", navHtml)
@@ -88,10 +99,10 @@ function addNav() {
 
 function insertImportButton(message, onClick) {
   const importButton = `
-		<a id="kt-import-button" style="box-shadow: 0 0 0 2px #FFF, 0 0 0 4px #9E9E9E; border-radius: 8px; background-color: #F31A7D; display: block; margin: 10px auto; padding: 5px; width: fit-content;">
-			${message}
-		</a>
-	`
+    <a id="kt-import-button" style="box-shadow: 0 0 0 2px #FFF, 0 0 0 4px #9E9E9E; border-radius: 8px; background-color: #F31A7D; display: block; margin: 10px auto; padding: 5px; width: fit-content;">
+      ${message}
+    </a>
+  `
   document.querySelector(".playdata__tab").insertAdjacentHTML("afterend", importButton)
 
   document.querySelector("#kt-import-button").onclick = onClick
@@ -110,13 +121,15 @@ function updateStatus(message) {
 }
 
 async function pollStatus(url) {
-  const resp = await fetch(url, {
+  const req = await requestPromise({
+    method: "GET",
+    url,
     headers: {
       "Authorization": "Bearer " + getApiKey(),
     },
   })
 
-  const body = await resp.json()
+  const body = req.response
 
   if (!body.success) {
     updateStatus("Terminal Error: " + body.description)
@@ -151,28 +164,28 @@ async function submitScores(scores) {
     meta: {
       game: "wacca",
       playtype: "Single",
-      service: "wacca-site-importer",
+      service: "site-importer",
     },
     scores,
   }
 
   console.log(JSON.stringify(body))
 
-  const fetchRequest = fetch(`${KT_BASE_URL}/ir/direct-manual/import`, {
+  const req = requestPromise({
     method: "POST",
+    url: `${KT_BASE_URL}/ir/direct-manual/import`,
     headers: {
       "Authorization": "Bearer " + getApiKey(),
       "Content-Type": "application/json",
       "X-User-Intent": "true",
     },
-    body: JSON.stringify(body),
+    data: JSON.stringify(body)
   })
 
   document.querySelector("#kt-import-button").remove()
   updateStatus("Submitting scores...")
 
-  const resp = await fetchRequest
-  const json = await resp.json()
+  const json = (await req).response
   // if json.success
   const pollUrl = json.body.url
 
@@ -236,7 +249,7 @@ function executeRecentImport() {
       day = "0" + day
     }
 
-		if (hour.length === 1) {
+    if (hour.length === 1) {
       hour = "0" + hour
     }
     // Construct iso-8601 time
@@ -287,11 +300,11 @@ function warnPbImport() {
 
   insertImportButton("Confirm DANGEROUS operation", executePBImport)
   const pbWarning = `
-		<p id="kt-import-pb-warning" style="text-align: center; background-color: #fff">
-			<span style="color: #f00">WARNING!</span>
-			PB import is not recommended in general! PBs do not have timestamp data, and will not create
-			sessions. Only import PBs <em>after</em> importing recent scores.
-		</p>
+    <p id="kt-import-pb-warning" style="text-align: center; background-color: #fff">
+      <span style="color: #f00">WARNING!</span>
+      PB import is not recommended in general! PBs do not have timestamp data, and will not create
+      sessions. Only import PBs <em>after</em> importing recent scores.
+    </p>
   `
   document.querySelector(".playdata__tab").insertAdjacentHTML("afterend", pbWarning)
 
@@ -332,8 +345,8 @@ function executePBImport() {
       const score = parseInt(scores[i].innerText.match(/[0-9]+/)[0])
 
       const lampImg = lampNodes.find(n => n.alt === "achieveimage")
-			const lamp = calculateLamp(lampImg, score)
-      
+      const lamp = calculateLamp(lampImg, score)
+
       const difficulty = levels[i].innerText.match(/NORMAL|HARD|EXPERT|INFERNO/)[0]
 
       scoresList.push({
