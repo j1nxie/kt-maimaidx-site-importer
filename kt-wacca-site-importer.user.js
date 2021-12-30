@@ -80,7 +80,7 @@ function addNav() {
   if (hasApiKey) {
     apiKeyText = ""
   }
-	let apiKeyLink = "<a id=\"setup-api-key-onclick\">Set up API Key (DO THIS FIRST)</a>"
+  let apiKeyLink = "<a id=\"setup-api-key-onclick\">Set up API Key (DO THIS FIRST)</a>"
   if (hasApiKey) {
     apiKeyLink = "<a id=\"setup-api-key-onclick\">Reconfigure API Key (if broken)</a>"
   }
@@ -209,7 +209,7 @@ function calculateLamp(lampElem, score) {
 }
 
 function extractDetailsInfo(liElem, expectedIcon) {
-	const iconSrcParts = liElem.querySelector("div.detail-table__icon > img").src.split("/")
+  const iconSrcParts = liElem.querySelector("div.detail-table__icon > img").src.split("/")
   // Sanity check
   if (iconSrcParts[iconSrcParts.length - 1] !== expectedIcon) {
     throw efg;
