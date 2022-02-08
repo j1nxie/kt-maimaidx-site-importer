@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name     kt-wacca-site-importer
-// @version  0.1.0
+// @version  1.0.0
 // @grant    GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
 // @author   cg505
@@ -11,7 +11,7 @@
 
 console.log("KTIMPORT")
 
-const KT_SELECTED_CONFIG = "staging"
+const KT_SELECTED_CONFIG = "prod"
 const KT_CONFIGS = {
   "staging": {
     baseUrl: "https://staging.kamaitachi.xyz",
