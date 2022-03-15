@@ -376,7 +376,7 @@ function executePBImport() {
 function executeStageUpImport() {
   const stageUpBadge = document.querySelectorAll(".user-info__icon__stage")
   const path = stageUpBadge[0].children[0].src
-  const stage = 4 || path.match("https://wacca.marv-games.jp/img/web/stage/rank/stage_icon_([0-9]{1,2})_[1-3].png")[1]
+  const stage = path.match("https://wacca.marv-games.jp/img/web/stage/rank/stage_icon_([0-9]{1,2})_[1-3].png")[1]
   submitScores([], stage)
 }
 
