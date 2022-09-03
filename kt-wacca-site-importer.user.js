@@ -166,8 +166,22 @@ async function pollStatus(url, stageUp) {
 async function submitScores(scores, stageUp) {
   let classes = {}
   if (stageUp) {
-    // I fucked up and made this 0-indexed.
-    classes.stageUp = stageUp - 1
+    classes.stageUp = {
+      1: "I",
+      2: "II",
+      3: "III",
+      4: "IV",
+      5: "V",
+      6: "VI",
+      7: "VII",
+      8: "VIII",
+      9: "IX",
+      10: "X",
+      11: "XI",
+      12: "XII",
+      13: "XIII",
+      14: "XIV",
+    }[stageUp]
   }
   const body = {
     meta: {
