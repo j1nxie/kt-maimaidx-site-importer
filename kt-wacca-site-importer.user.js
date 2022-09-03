@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name     kt-wacca-site-importer
-// @version  1.0.0
+// @version  1.1.0
 // @grant    GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
 // @author   cg505
@@ -63,7 +63,6 @@ function submitApiKey(event) {
   event.preventDefault()
 
   const apiKey = document.querySelector("#api-key-form-key").value
-  console.log(apiKey)
   setApiKey(apiKey)
 
   location.reload()
@@ -103,7 +102,8 @@ function insertImportButton(message, onClick) {
       ${message}
     </a>
   `
-  document.querySelector(".playdata__tab").insertAdjacentHTML("afterend", importButton)
+  const prevElem = document.querySelector(".playdata__tab") || document.querySelector(".common-nav")
+  prevElem.insertAdjacentHTML("afterend", importButton)
 
   document.querySelector("#kt-import-button").onclick = onClick
 }
@@ -114,13 +114,14 @@ function updateStatus(message) {
     statusElem = document.createElement("p")
     statusElem.id = "kt-import-status"
     statusElem.style = "text-align: center; background-color: #fff;"
-    document.querySelector(".playdata__tab").insertAdjacentElement("afterend", statusElem)
+    const prevElem = document.querySelector(".playdata__tab") || document.querySelector(".common-nav")
+    prevElem.insertAdjacentElement("afterend", statusElem)
   }
 
   statusElem.innerText = message
 }
 
-async function pollStatus(url) {
+async function pollStatus(url, stageUp) {
   const req = await requestPromise({
     method: "GET",
     url,
@@ -138,13 +139,16 @@ async function pollStatus(url) {
 
   if (body.body.importStatus === "ongoing") {
     updateStatus("Importing scores... " + body.description + " Progress: " + body.body.progress.description)
-    setTimeout(pollStatus, 1000, url)
+    setTimeout(pollStatus, 1000, url, stageUp)
     return
   }
 
   if (body.body.importStatus === "completed") {
     console.log(body.body)
     let message = body.description + ` ${body.body.import.scoreIDs.length} scores`
+    if (stageUp) {
+      message += ` and Stage ${stageUp}`
+    }
     if (body.body.import.errors.length > 0) {
     	message += `, ${body.body.import.errors.length} errors (see console log for details)`
       for (const error of body.body.import.errors) {
@@ -159,7 +163,26 @@ async function pollStatus(url) {
   updateStatus(body.description)
 }
 
-async function submitScores(scores) {
+async function submitScores(scores, stageUp) {
+  let classes = {}
+  if (stageUp) {
+    classes.stageUp = {
+      1: "I",
+      2: "II",
+      3: "III",
+      4: "IV",
+      5: "V",
+      6: "VI",
+      7: "VII",
+      8: "VIII",
+      9: "IX",
+      10: "X",
+      11: "XI",
+      12: "XII",
+      13: "XIII",
+      14: "XIV",
+    }[stageUp]
+  }
   const body = {
     meta: {
       game: "wacca",
@@ -167,6 +190,7 @@ async function submitScores(scores) {
       service: "site-importer",
     },
     scores,
+    classes,
   }
 
   console.log(JSON.stringify(body))
@@ -190,7 +214,7 @@ async function submitScores(scores) {
   const pollUrl = json.body.url
 
   updateStatus("Importing scores...")
-  pollStatus(pollUrl)
+  pollStatus(pollUrl, stageUp)
 }
 
 function calculateLamp(lampElem, score) {
@@ -363,6 +387,13 @@ function executePBImport() {
   submitScores(scoresList)
 }
 
+function executeStageUpImport() {
+  const stageUpBadge = document.querySelectorAll(".user-info__icon__stage")
+  const path = stageUpBadge[0].children[0].src
+  const stage = path.match("https://wacca.marv-games.jp/img/web/stage/rank/stage_icon_([0-9]{1,2})_[1-3].png")[1]
+  submitScores([], stage)
+}
+
 console.log("running")
 
 addNav()
@@ -374,5 +405,10 @@ switch (location.pathname) {
 
   case "/web/history":
     insertImportButton("IMPORT RECENT SCORES", executeRecentImport)
+    break
+
+  case "/web/top":
+  case "/web/player":
+    insertImportButton("IMPORT STAGEUP", executeStageUpImport)
     break
 }
