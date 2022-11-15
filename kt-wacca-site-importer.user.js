@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name     kt-wacca-site-importer
-// @version  1.1.0
+// @name     kt-maimaidx-site-importer
+// @version  1.0.0
 // @grant    GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
-// @author   cg505
-// @include  https://wacca.marv-games.jp/web/*
+// @author   j1nxie 
+// @include  https://maimaidx-eng.com/maimai-mobile/*
 // ==/UserScript==
 
 // TODO: Error handling system
@@ -15,11 +15,11 @@ const KT_SELECTED_CONFIG = "prod"
 const KT_CONFIGS = {
   "staging": {
     baseUrl: "https://staging.kamaitachi.xyz",
-    clientId: "CI6421e070584bf2807812064a36d4dc68803dfbb7",
+    clientId: "CI5ba595889dca0ebf15f700291084bbf26d199ee4",
   },
   "prod": {
     baseUrl: "https://kamaitachi.xyz",
-    clientId: "CI3bf0110f23dbe90d5b84c2d3fecf752af2b0b1f6",
+    clientId: "CIaf985c87034413cd78328c9cad474ed032822125",
   },
 }
 const KT_BASE_URL = KT_CONFIGS[KT_SELECTED_CONFIG].baseUrl
@@ -86,8 +86,8 @@ function addNav() {
   const navHtml = `
     <div style="background-color: #000">
       ${apiKeyText}
-      <a href="/web/history">Jump to recent score import (preferred)</a><br />
-      <a href="/web/music">Jump to PB import</a><br />
+      <a href="/maimai-mobile/record">Jump to recent score import (preferred)</a><br />
+      <a href="/maimai-mobile/record/musicGenre">Jump to PB import</a><br />
       ${apiKeyLink}
     </div>
   `
@@ -163,29 +163,36 @@ async function pollStatus(url, stageUp) {
   updateStatus(body.description)
 }
 
-async function submitScores(scores, stageUp) {
+async function submitScores(scores) {
   let classes = {}
-  if (stageUp) {
-    classes.stageUp = {
-      1: "I",
-      2: "II",
-      3: "III",
-      4: "IV",
-      5: "V",
-      6: "VI",
-      7: "VII",
-      8: "VIII",
-      9: "IX",
-      10: "X",
-      11: "XI",
-      12: "XII",
-      13: "XIII",
-      14: "XIV",
-    }[stageUp]
+  if (dans) {
+    classes.dans = {
+      1: "DAN_1",
+      2: "DAN_2",
+      3: "DAN_3",
+      4: "DAN_4",
+      5: "DAN_5",
+      6: "DAN_6",
+      7: "DAN_7",
+      8: "DAN_8",
+      9: "DAN_9",
+      10: "DAN_10",
+      11: "SHINSHODAN",
+      12: "SHINDAN_2",
+      13: "SHINDAN_3",
+      14: "SHINDAN_4",
+      15: "SHINDAN_5",
+      16: "SHINDAN_6",
+      18: "SHINDAN_7",
+      19: "SHINDAN_8",
+      20: "SHINDAN_9",
+      21: "SHINDAN_10",
+      22: "SHINKAIDEN",
+    }[dans]
   }
   const body = {
     meta: {
-      game: "wacca",
+      game: "maimaidx",
       playtype: "Single",
       service: "site-importer",
     },
