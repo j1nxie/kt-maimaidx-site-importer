@@ -11,7 +11,7 @@
 
 console.log("KTIMPORT")
 
-const KT_SELECTED_CONFIG = "prod"
+const KT_SELECTED_CONFIG = "staging"
 const KT_CONFIGS = {
 	"staging": {
 		baseUrl: "https://staging.kamaitachi.xyz",
@@ -262,23 +262,24 @@ function executeRecentImport() {
 	scoresElems.forEach(e => {
 		const title = e.querySelector(".basic_block.m_5.p_5.p_1_10.f_13.break").innerText
 
-		const style = e.querySelector(".playlog_music_kind_icon")[0]
-			.src.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "").replace(".png", "")
-		let difficultyName = e.querySelector(".playlog_top_container img")[0]
-			.src.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "").replace(difficultyName[0], difficultyName[0].toUpperCase())
+		const style = e.querySelector(".playlog_music_kind_icon")[0].src
+			.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "").replace(".png", "")
+		let difficultyName = e.querySelector(".playlog_top_container img")[0].src
+			.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "")
+			.replace(difficultyName[0], difficultyName[0].toUpperCase())
 
 		if style === "dx" {
 			difficultyName == "DX" + difficultyName
 		}
 
-		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r")[0]
-			.innerHTML.replace('<span class = "f_20"', '').replace("<span>", "")
+		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r")[0].innerHTML
+			.replace('<span class = "f_20"', '').replace("<span>", "")
 		const score = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
 
-		const clearStatus = e.querySelector(".basic_block.m_5.p_5.p_l.f_13.break")[0]
-			.src.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
-		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13")[0]
-			.src.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.25", "")
+		const clearStatus = e.querySelector(".basic_block.m_5.p_5.p_l.f_13.break")[0].src
+			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
+		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13")[0].src
+			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.25", "")
 		const totalLamp = [clearStatus, lampStatus]
 		const lamp = calculateLamp(totalLamp, score)
 
@@ -409,12 +410,14 @@ function executePBImport() {
 	submitScores(scoresList)
 }
 
-function executeStageUpImport() {
-	const stageUpBadge = document.querySelectorAll(".user-info__icon__stage")
+/*
+function executeDanImport() {
+	const stageUpBadge = document.querySelectorAll("")
 	const path = stageUpBadge[0].children[0].src
 	const stage = path.match("https://wacca.marv-games.jp/img/web/stage/rank/stage_icon_([0-9]{1,2})_[1-3].png")[1]
 	submitScores([], stage)
 }
+*/
 
 console.log("running")
 
