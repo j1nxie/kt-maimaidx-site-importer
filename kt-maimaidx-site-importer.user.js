@@ -69,7 +69,7 @@ function submitApiKey(event) {
 }
 
 function addNav() {
-	const topNode = document.querySelector("header")
+	const topNode = document.querySelector(".comment_block.break.f_1.f_12")
 	const hasApiKey = !!getApiKey()
 	let apiKeyText = `
 	<p style="color: #fff; text-align: center;">
