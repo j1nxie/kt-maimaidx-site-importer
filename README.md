@@ -3,7 +3,7 @@ Import scores from maimaidx-eng.com/maimai-mobile to Kamaitachi
 
 ## Installation
 1. Install a userscript manager (e.g. Greasemonkey or Tampermonkey).
-1. Click [here](https://github.com/j1nxie/kt-maimaidx-site-importer/raw/main/kt-maimai-site-importer.user.js).
+1. Click [here](https://github.com/j1nxie/kt-maimaidx-site-importer/raw/main/kt-maimaidx-site-importer.user.js).
 
 ## Usage
 1. Go to the maimaiNET website (https://maimaidx-eng.com/maimai-mobile) and log in.
