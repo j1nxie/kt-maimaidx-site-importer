@@ -110,11 +110,19 @@ function addNav() {
 	navPb.href = "/maimai-mobile/record/musicGenre"
 	const navPbText = "Jump to PB import"
 	navPb.append(navPbText)
+	navPb.append(document.createElement("br"))
 	navHtml.append(navPb)
+
+	const navDans = document.createElement("a")
+	navDans.id = "import-dans-onclick"
+	const navDansText = "Import dans"
+	navDans.append(navDansText)
+	navHtml.append(navDans)
 
 	topNode.append(navHtml)
 
 	document.querySelector("#setup-api-key-onclick").onclick = setupApiKey
+	document.querySelector("#import-dans-onclick").onclick = executeDanImport
 }
 
 function insertImportButton(message, onClick) {
@@ -300,12 +308,12 @@ function executeRecentImport() {
 		}
 
 		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r").innerHTML
-			.replace('<span class = "f_20"', '').replace("<span>", "")
-		const score = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
+			.replace('<span class="f_20">', '').replace("</span>", "")
+		const score = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0])
 
-		const clearStatus = e.querySelector(".basic_block.m_5.p_5.p_l.f_13.break").src
+		const clearStatus = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").firstChild
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
-		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").src
+		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.25", "")
 		const totalLamp = [clearStatus, lampStatus]
 		const lamp = calculateLamp(totalLamp, score)
@@ -330,18 +338,30 @@ function executeRecentImport() {
 		const date = new Date(isoTime)
 		const timeAchieved = date.valueOf()
 
-		const details = e.querySelector(".playdata__detail-table").children
+		const idx = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13")
+			.getElementsByTagName("input")[0].value
 
-		const marvelous = parseInt(extractDetailsInfo(details[0], "decision_marvelous.png").innerText)
-		const great = parseInt(extractDetailsInfo(details[1], "decision_great.png").innerText)
-		const good = parseInt(extractDetailsInfo(details[2], "decision_good.png").innerText)
-		const miss = parseInt(extractDetailsInfo(details[3], "decision_miss.png").innerText)
+		window.location.access(`https://maimaidx-eng.com/maimai-mobile/record/playlogDetail/?idx=${idx}`)
 
-		const fast = parseInt(extractDetailsInfo(details[4], "fastslow_fast.png").innerText)
-		const slow = parseInt(extractDetailsInfo(details[5], "fastslow_late.png").innerText)
+		// TODO: parse judgement table for judges
+		[...document.querySelector(".playlog_notes_detail.t_r.f_l.f_11.f_b").querySelectorAll("tr")].slice(1).map((row) => {
+			return {
+				placeholder: {
+					"pcrit": parseInt(row.querySelectorAll("td")[0].innerHTML) || 0,
+					"perfect": parseInt(row.querySelectorAll("td")[1].innerHTML) || 0,
+					"great": parseInt(row.querySelectorAll("td")[2].innerHTML) || 0,
+					"good": parseInt(row.querySelectorAll("td")[3].innerHTML) || 0,
+					"miss": parseInt(row.querySelectorAll("td")[4].innerHTML) || 0,
+				}
+			}
+		}).forEach((k, idx) => {
+			const 			
+		})
 
-		const comboDiv = extractDetailsInfo(details[6], "combo.png")
-		const maxCombo = parseInt(comboDiv.querySelector("span.combo__num").innerText)
+		const fast = parseInt(document.querySelectorAll(".w_96.f_l.t_r")[0].textContent)
+		const slow = parseInt(document.querySelectorAll(".w_96.f_l.t_r")[1].textContent)
+
+		const maxCombo = parseInt(document.querySelector(".f_r.f_14.white").innerHTML.match(/([0-9]+)\/([0-9]+)/)[1])
 
 		scoresList.push({
 			score,
@@ -383,6 +403,7 @@ function warnPbImport() {
 
 }
 
+// TODO: improt PBs
 function executePBImport() {
 	// https://github.com/shimmand/waccaSupportTools/blob/main/analyzePlayData/main.js
 
@@ -436,14 +457,15 @@ function executePBImport() {
 	submitScores(scoresList)
 }
 
-/*
 function executeDanImport() {
-	const stageUpBadge = document.querySelectorAll("")
-	const path = stageUpBadge[0].children[0].src
-	const stage = path.match("https://wacca.marv-games.jp/img/web/stage/rank/stage_icon_([0-9]{1,2})_[1-3].png")[1]
-	submitScores([], stage)
+	const danBadge = document.querySelector(".h_35.f_l").src 
+	danBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/course/course_rank_", "")
+		.replace(".png", "")
+
+	// TODO: submit dans
+	
+	// submitScores([], stage)
 }
-*/
 
 console.log("running")
 
