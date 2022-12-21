@@ -343,19 +343,22 @@ function executeRecentImport() {
 
 		window.location.access(`https://maimaidx-eng.com/maimai-mobile/record/playlogDetail/?idx=${idx}`)
 
-		// TODO: parse judgement table for judges
-		[...document.querySelector(".playlog_notes_detail.t_r.f_l.f_11.f_b").querySelectorAll("tr")].slice(1).map((row) => {
-			return {
-				placeholder: {
-					"pcrit": parseInt(row.querySelectorAll("td")[0].innerHTML) || 0,
-					"perfect": parseInt(row.querySelectorAll("td")[1].innerHTML) || 0,
-					"great": parseInt(row.querySelectorAll("td")[2].innerHTML) || 0,
-					"good": parseInt(row.querySelectorAll("td")[3].innerHTML) || 0,
-					"miss": parseInt(row.querySelectorAll("td")[4].innerHTML) || 0,
-				}
+		let detailData = {
+			notes: {
+				pcrit: 0,
+				perfect: 0,
+				great: 0,
+				good: 0,
+				miss: 0,
 			}
-		}).forEach((k, idx) => {
-			const 			
+		}
+
+		[...document.querySelector(".playlog_notes_detail.t_r.f_l.f_11.f_b").querySelectorAll("tr")].slice(1).map((row) => {
+			detailData.notes.pcrit = detailData.notes.pcrit + parseInt(row.querySelectorAll("td")[0].innerHTML)
+			detailData.notes.perfect = detailData.notes.perfect + parseInt(row.querySelectorAll("td")[1].innerHTML)
+			detailData.notes.great = detailData.notes.great + parseInt(row.querySelectorAll("td")[2].innerHTML)
+			detailData.notes.good = detailData.notes.good + parseInt(row.querySelectorAll("td")[3].innerHTML)
+			detailData.notes.miss = detailData.notes.miss + parseInt(row.querySelectorAll("td")[4].innerHTML)
 		})
 
 		const fast = parseInt(document.querySelectorAll(".w_96.f_l.t_r")[0].textContent)
@@ -371,11 +374,11 @@ function executeRecentImport() {
 			difficulty: difficultyName,
 			timeAchieved,
 			judgements: {
-				pcrit,
-				perfect,
-				great,
-				good,
-				miss,
+				pcrit: detailData.notes.pcrit,
+				perfect: detailData.notes.perfect,
+				great: detailData.notes.great,
+				good: detailData.notes.good,
+				miss: detailData.notes.miss,
 			},
 			hitMeta: {
 				fast,
@@ -403,7 +406,7 @@ function warnPbImport() {
 
 }
 
-// TODO: improt PBs
+// TODO: import PBs
 function executePBImport() {
 	// https://github.com/shimmand/waccaSupportTools/blob/main/analyzePlayData/main.js
 
@@ -471,7 +474,7 @@ console.log("running")
 
 switch (location.pathname) {
 	case "/maimai-mobile/record/musicGenre/":
-		insertImportButton("IMPORT ALL PBs", warnPbImport)
+		// insertImportButton("IMPORT ALL PBs", warnPbImport)
 		break
 
 	case "/maimai-mobile/record/":
