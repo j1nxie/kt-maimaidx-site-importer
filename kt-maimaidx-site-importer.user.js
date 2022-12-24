@@ -4,6 +4,7 @@
 // @grant	 GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
 // @author	 j1nxie 
+// @require  https://code.jquery.com/jquery-3.6.3.slim.min.js
 // @include  https://maimaidx-eng.com/maimai-mobile/*
 // ==/UserScript==
 
@@ -200,7 +201,7 @@ async function pollStatus(url, stageUp) {
 
 async function submitScores(scores) {
 	let classes = {}
-	if (dans) {
+	/*if (dans) {
 		classes.dans = {
 			1: "DAN_1",
 			2: "DAN_2",
@@ -225,6 +226,7 @@ async function submitScores(scores) {
 			22: "SHINKAIDEN",
 		}[dans]
 	}
+	*/
 	const body = {
 		meta: {
 			game: "maimaidx",
@@ -237,6 +239,7 @@ async function submitScores(scores) {
 
 	console.log(JSON.stringify(body))
 
+	/*
 	const req = requestPromise({
 		method: "POST",
 		url: `${KT_BASE_URL}/ir/direct-manual/import`,
@@ -257,20 +260,22 @@ async function submitScores(scores) {
 
 	updateStatus("Importing scores...")
 	pollStatus(pollUrl, dans)
+	*/
 }
 
 function calculateLamp(totalLamp, score) {
 	const lampMap = {
-		"clear.png": "CLEAR",
-		"fc.png": "FULL COMBO",
-		"fcplus.png": "FULL COMBO+",
-		"ap.png": "ALL PERFECT",
-		"applus.png": "ALL PERFECT+",
+		"clear": "CLEAR",
+		"fc": "FULL COMBO",
+		"fcplus": "FULL COMBO+",
+		"ap": "ALL PERFECT",
+		"applus": "ALL PERFECT+",
 	}
+	let lamp = null;
 	if (totalLamp[1] === "fc_dummy") {
-		let lamp = lampMap[totalLamp[0]]
+		lamp = lampMap[totalLamp[0]]
 	} else {
-		let lamp = lampMap[totalLamp[1]]
+		lamp = lampMap[totalLamp[1]]
 	}
 
 	if (lamp === null) {
@@ -295,33 +300,54 @@ function executeRecentImport() {
 	let scoresList = []
 
 	scoresElems.forEach(e => {
-		const title = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText
+		let scoreData = {
+			score: 0,
+			lamp: "",
+			matchType: "songTitle",
+			identifier: "",
+			difficulty: "",
+			timeAchieved: 0,
+			judgements: {
+				pcrit: 0,
+				perfect: 0,
+				great: 0,
+				good: 0,
+				miss: 0,
+			},
+			hitMeta: {
+				fast: 0,
+				slow: 0,
+				maxCombo: 0,
+			}
+		}
+
+		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText
 
 		const style = e.querySelector(".playlog_music_kind_icon").src
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "").replace(".png", "")
-		let difficultyName = e.querySelector(".playlog_top_container img")[0].src
+		scoreData.difficulty = e.querySelector(".playlog_diff.v_b").src
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "")
-		difficultyName.replace(difficultyName[0], difficultyName[0].toUpperCase())
+		scoreData.difficulty = scoreData.difficulty.replace(scoreData.difficulty[0], scoreData.difficulty[0].toUpperCase())
 
 		if (style === "dx") {
-			difficultyName == "DX" + difficultyName
+			scoreData.difficulty = "DX " + scoreData.difficulty
 		}
 
 		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r").innerHTML
 			.replace('<span class="f_20">', '').replace("</span>", "")
-		const score = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0])
+		scoreData.score = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0])
 
-		const clearStatus = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").firstChild
+		const clearStatus = e.querySelector(".w_80.f_r").src
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
 		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.25", "")
 		const totalLamp = [clearStatus, lampStatus]
-		const lamp = calculateLamp(totalLamp, score)
+		scoreData.lamp = calculateLamp(totalLamp, scoreData.score)
 
-		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementByClassName("v_b")[1]
+		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1]
 		// Break out pieces, put into utc string with timezone info
 		const match = timestampElem.innerHTML.match("([0-9]{4})/([0-9]{1,2})/([0-9]{1,2}) ([0-9]{1,2}):([0-9]{2})")
-		let [year, month, day, hour, minute] = match
+		let [_, year, month, day, hour, minute] = match
 		if (month.length === 1) {
 			month = "0" + month
 		}
@@ -336,58 +362,38 @@ function executeRecentImport() {
 		const isoTime = `${year}-${month}-${day}T${hour}:${minute}:00.000+09:00`
 		// Parse with Date, then get unix time
 		const date = new Date(isoTime)
-		const timeAchieved = date.valueOf()
+		scoreData.timeAchieved = date.valueOf()
 
-		const idx = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13")
+		const idx = e.querySelector(".m_t_5.t_r")
 			.getElementsByTagName("input")[0].value
 
-		window.location.access(`https://maimaidx-eng.com/maimai-mobile/record/playlogDetail/?idx=${idx}`)
+		let xhr = new XMLHttpRequest()
+		let url = `https://maimaidx-eng.com/maimai-mobile/record/playlogDetail/?idx=${idx}`
 
-		let detailData = {
-			notes: {
-				pcrit: 0,
-				perfect: 0,
-				great: 0,
-				good: 0,
-				miss: 0,
-			}
+		xhr.open("GET", url, false)
+
+		xhr.onload = () => {
+			console.log(`Parsing score of index ${idx}`)
+			let parser = new DOMParser();
+			let doc = parser.parseFromString(xhr.response, "text/html");
+
+			[...doc.querySelector(".playlog_notes_detail.t_r.f_l.f_11.f_b").querySelectorAll("tr")].slice(1).map((row) => {
+				scoreData.judgements.pcrit = scoreData.judgements.pcrit + Number(row.querySelectorAll("td")[0].innerHTML)
+				scoreData.judgements.perfect = scoreData.judgements.perfect + Number(row.querySelectorAll("td")[1].innerHTML)
+				scoreData.judgements.great = scoreData.judgements.great + Number(row.querySelectorAll("td")[2].innerHTML)
+				scoreData.judgements.good = scoreData.judgements.good + Number(row.querySelectorAll("td")[3].innerHTML)
+				scoreData.judgements.miss = scoreData.judgements.miss + Number(row.querySelectorAll("td")[4].innerHTML)
+			})
+
+			scoreData.hitMeta.fast = Number(doc.querySelectorAll(".w_96.f_l.t_r")[0].textContent)
+			scoreData.hitMeta.slow = Number(doc.querySelectorAll(".w_96.f_l.t_r")[1].textContent)
+
+			scoreData.hitMeta.maxCombo = Number(doc.querySelector(".f_r.f_14.white").innerHTML.match(/([0-9]+)\/([0-9]+)/)[1])
+
+			scoresList.push(scoreData)
 		}
-
-		[...document.querySelector(".playlog_notes_detail.t_r.f_l.f_11.f_b").querySelectorAll("tr")].slice(1).map((row) => {
-			detailData.notes.pcrit = detailData.notes.pcrit + parseInt(row.querySelectorAll("td")[0].innerHTML)
-			detailData.notes.perfect = detailData.notes.perfect + parseInt(row.querySelectorAll("td")[1].innerHTML)
-			detailData.notes.great = detailData.notes.great + parseInt(row.querySelectorAll("td")[2].innerHTML)
-			detailData.notes.good = detailData.notes.good + parseInt(row.querySelectorAll("td")[3].innerHTML)
-			detailData.notes.miss = detailData.notes.miss + parseInt(row.querySelectorAll("td")[4].innerHTML)
-		})
-
-		const fast = parseInt(document.querySelectorAll(".w_96.f_l.t_r")[0].textContent)
-		const slow = parseInt(document.querySelectorAll(".w_96.f_l.t_r")[1].textContent)
-
-		const maxCombo = parseInt(document.querySelector(".f_r.f_14.white").innerHTML.match(/([0-9]+)\/([0-9]+)/)[1])
-
-		scoresList.push({
-			score,
-			lamp,
-			matchType: "songTitle",
-			identifier: title,
-			difficulty: difficultyName,
-			timeAchieved,
-			judgements: {
-				pcrit: detailData.notes.pcrit,
-				perfect: detailData.notes.perfect,
-				great: detailData.notes.great,
-				good: detailData.notes.good,
-				miss: detailData.notes.miss,
-			},
-			hitMeta: {
-				fast,
-				slow,
-				maxCombo,
-			},
-		})
+		xhr.send("")
 	})
-
 	submitScores(scoresList)
 }
 
@@ -439,7 +445,7 @@ function executePBImport() {
 				continue
 			}
 
-			const score = parseInt(scores[i].innerText.match(/[0-9]+/)[0])
+			const score = Number(scores[i].innerText.match(/[0-9]+/)[0])
 
 			const lampImg = lampNodes.find(n => n.alt === "achieveimage")
 			const lamp = calculateLamp(lampImg, score)
@@ -466,7 +472,7 @@ function executeDanImport() {
 		.replace(".png", "")
 
 	// TODO: submit dans
-	
+
 	// submitScores([], stage)
 }
 
