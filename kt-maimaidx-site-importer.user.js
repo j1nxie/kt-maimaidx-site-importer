@@ -320,6 +320,10 @@ function executeRecentImport() {
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "")
 		scoreData.difficulty = scoreData.difficulty.replace(scoreData.difficulty[0], scoreData.difficulty[0].toUpperCase())
 
+		if (scoreData.difficulty === "Remaster") {
+			scoreData.difficulty = "Re:Master"
+		}
+
 		if (style === "dx") {
 			scoreData.difficulty = "DX " + scoreData.difficulty
 		}
