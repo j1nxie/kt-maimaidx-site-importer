@@ -287,16 +287,6 @@ function calculateLamp(totalLamp, score) {
 	return lamp
 }
 
-function extractDetailsInfo(liElem, expectedIcon) {
-	const iconSrcParts = liElem.querySelector("div.detail-table__icon > img").src.split("/")
-	// Sanity check
-	if (iconSrcParts[iconSrcParts.length - 1] !== expectedIcon) {
-		throw efg;
-	}
-
-	return liElem.querySelector("div.detail-table__score")
-}
-
 function executeRecentImport() {
 	const scoresElems = document.querySelectorAll(".p_10.t_l.f_0.v_b")
 	let scoresList = []
