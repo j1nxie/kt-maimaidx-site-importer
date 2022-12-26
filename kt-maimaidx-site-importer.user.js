@@ -121,9 +121,9 @@ function addNav() {
 	const navDansText = "Import dans"
 	navDans.append(navDansText)
 	navHtml.append(navDans)
+	*/
 
 	topNode.append(navHtml)
-	*/
 
 	document.querySelector("#setup-api-key-onclick").onclick = setupApiKey
 	// document.querySelector("#import-dans-onclick").onclick = executeDanImport
