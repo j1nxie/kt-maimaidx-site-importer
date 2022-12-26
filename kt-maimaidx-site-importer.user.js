@@ -101,14 +101,14 @@ function addNav() {
 	navHtml.append(apiKeyParagraph)
 
 	const navRecent = document.createElement("a")
-	navRecent.href = "/maimai-mobile/record"
+	navRecent.href = "/maimai-mobile/record/"
 	const navRecentText = "Jump to recent score import (preferred)"
 	navRecent.append(navRecentText)
 	navRecent.append(document.createElement("br"))
 	navHtml.append(navRecent)
 
 	const navPb = document.createElement("a")
-	navPb.href = "/maimai-mobile/record/musicGenre"
+	navPb.href = "/maimai-mobile/record/musicGenre/"
 	const navPbText = "Jump to PB import"
 	navPb.append(navPbText)
 	navPb.append(document.createElement("br"))
