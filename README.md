@@ -5,7 +5,7 @@ Import scores from maimaidx-eng.com/maimai-mobile to Kamaitachi
 ## Features
 
 - [x] Import recent scores
-- [ ] Import PBs
+- [x] Import PBs
 - [ ] Import dan status
 
 ## Installation

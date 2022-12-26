@@ -114,19 +114,15 @@ function addNav() {
 	navPb.append(document.createElement("br"))
 	navHtml.append(navPb)
 
-	// TODO: Dan import
-	/*
 	const navDans = document.createElement("a")
-	navDans.id = "import-dans-onclick"
-	const navDansText = "Import dans"
+	navDans.href = "/maimai-mobile/playerData/"
+	const navDansText = "Jump to dan import"
 	navDans.append(navDansText)
 	navHtml.append(navDans)
-	*/
 
 	topNode.append(navHtml)
 
 	document.querySelector("#setup-api-key-onclick").onclick = setupApiKey
-	// document.querySelector("#import-dans-onclick").onclick = executeDanImport
 }
 
 function insertImportButton(message, onClick) {
@@ -160,7 +156,7 @@ function updateStatus(message) {
 	statusElem.innerText = message
 }
 
-async function pollStatus(url, stageUp) {
+async function pollStatus(url, dan) {
 	const req = await requestPromise({
 		method: "GET",
 		url,
@@ -178,15 +174,15 @@ async function pollStatus(url, stageUp) {
 
 	if (body.body.importStatus === "ongoing") {
 		updateStatus("Importing scores... " + body.description + " Progress: " + body.body.progress.description)
-		setTimeout(pollStatus, 1000, url)
+		setTimeout(pollStatus, 1000, url, dan)
 		return
 	}
 
 	if (body.body.importStatus === "completed") {
 		console.log(body.body)
 		let message = body.description + ` ${body.body.import.scoreIDs.length} scores`
-		if (stageUp) {
-			message += ` and Stage ${stageUp}`
+		if (dan) {
+			message += ` and Dan ${dan}`
 		}
 		if (body.body.import.errors.length > 0) {
 			message += `, ${body.body.import.errors.length} errors (see console log for details)`
@@ -202,10 +198,10 @@ async function pollStatus(url, stageUp) {
 	updateStatus(body.description)
 }
 
-async function submitScores(scores) {
+async function submitScores(scores, dan) {
 	let classes = {}
-	/*if (dans) {
-		classes.dans = {
+	if (dan) {
+		classes.dan = {
 			1: "DAN_1",
 			2: "DAN_2",
 			3: "DAN_3",
@@ -227,9 +223,9 @@ async function submitScores(scores) {
 			20: "SHINDAN_9",
 			21: "SHINDAN_10",
 			22: "SHINKAIDEN",
-		}[dans]
+		}[dan]
 	}
-	*/
+
 	const body = {
 		meta: {
 			game: "maimaidx",
@@ -261,7 +257,7 @@ async function submitScores(scores) {
 	const pollUrl = json.body.url
 
 	updateStatus("Importing scores...")
-	pollStatus(pollUrl) // TODO: Dan import pollStatus(pollUrl, dans)
+	pollStatus(pollUrl, dan)
 }
 
 function calculateLamp(totalLamp, score) {
@@ -463,12 +459,14 @@ function executePBImport() {
 
 function executeDanImport() {
 	const danBadge = document.querySelector(".h_35.f_l").src 
-	danBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/course/course_rank_", "")
-		.replace(".png", "")
+	let danNumber = Number(danBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/course/course_rank_", "")
+		.replace(".png", "").substring(0, 2))
 
-	// TODO: submit dans
+	if (danNumber > 11) {
+		danNumber = danNumber - 1;
+	}
 
-	// submitScores([], stage)
+    submitScores([], danNumber)
 }
 
 console.log("running")
@@ -487,6 +485,6 @@ switch (location.pathname) {
 		break
 
 	case "/maimai-mobile/playerData/":
-		// insertImportButton("IMPORT STAGEUP", executeStageUpImport)
+		insertImportButton("IMPORT DANS", executeDanImport)
 		break
 }
