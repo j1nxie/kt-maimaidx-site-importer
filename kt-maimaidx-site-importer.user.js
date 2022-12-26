@@ -114,6 +114,7 @@ function addNav() {
 	navPb.append(document.createElement("br"))
 	navHtml.append(navPb)
 
+	/*
 	const navDans = document.createElement("a")
 	navDans.id = "import-dans-onclick"
 	const navDansText = "Import dans"
@@ -121,9 +122,10 @@ function addNav() {
 	navHtml.append(navDans)
 
 	topNode.append(navHtml)
+	*/
 
 	document.querySelector("#setup-api-key-onclick").onclick = setupApiKey
-	document.querySelector("#import-dans-onclick").onclick = executeDanImport
+	// document.querySelector("#import-dans-onclick").onclick = executeDanImport
 }
 
 function insertImportButton(message, onClick) {
