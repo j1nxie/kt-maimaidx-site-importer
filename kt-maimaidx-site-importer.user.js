@@ -12,7 +12,7 @@
 
 console.log("KTIMPORT")
 
-const KT_SELECTED_CONFIG = "staging"
+const KT_SELECTED_CONFIG = "prod"
 const KT_CONFIGS = {
 	"staging": {
 		baseUrl: "https://staging.kamaitachi.xyz",
@@ -109,11 +109,12 @@ function addNav() {
 
 	const navPb = document.createElement("a")
 	navPb.href = "/maimai-mobile/record/musicGenre/"
-	const navPbText = "Jump to PB import"
+	const navPbText = "Jump to PB import (WIP - unimplemented)"
 	navPb.append(navPbText)
 	navPb.append(document.createElement("br"))
 	navHtml.append(navPb)
 
+	// TODO: Dan import
 	/*
 	const navDans = document.createElement("a")
 	navDans.id = "import-dans-onclick"
@@ -177,7 +178,7 @@ async function pollStatus(url, stageUp) {
 
 	if (body.body.importStatus === "ongoing") {
 		updateStatus("Importing scores... " + body.description + " Progress: " + body.body.progress.description)
-		setTimeout(pollStatus, 1000, url, stageUp)
+		setTimeout(pollStatus, 1000, url)
 		return
 	}
 
@@ -241,7 +242,6 @@ async function submitScores(scores) {
 
 	console.log(JSON.stringify(body))
 
-	/*
 	const req = requestPromise({
 		method: "POST",
 		url: `${KT_BASE_URL}/ir/direct-manual/import`,
@@ -261,8 +261,7 @@ async function submitScores(scores) {
 	const pollUrl = json.body.url
 
 	updateStatus("Importing scores...")
-	pollStatus(pollUrl, dans)
-	*/
+	pollStatus(pollUrl) // TODO: Dan import pollStatus(pollUrl, dans)
 }
 
 function calculateLamp(totalLamp, score) {
@@ -484,6 +483,6 @@ switch (location.pathname) {
 		break
 
 	case "/maimai-mobile/playerData/":
-		insertImportButton("IMPORT STAGEUP", executeStageUpImport)
+		// insertImportButton("IMPORT STAGEUP", executeStageUpImport)
 		break
 }
