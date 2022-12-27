@@ -6,7 +6,7 @@ Import scores from maimaidx-eng.com/maimai-mobile to Kamaitachi
 
 - [x] Import recent scores
 - [x] Import PBs
-- [ ] Import dan status
+- [x] Import dan status
 
 ## Installation
 
@@ -19,4 +19,4 @@ Import scores from maimaidx-eng.com/maimai-mobile to Kamaitachi
 2. Set up your API key following the instructions you see on the page.
 3. ALWAYS IMPORT RECENT SCORES FIRST.
 4. Jump to recent scores page, and click the "Import recent scores" button.
-5. ~~To backfill all PBs, jump to the PBs page and click the "Import all PBs" button.~~ For now submitting PBs doesn't work.
+5. To backfill all PBs, jump to the PBs page and click the "Import all PBs" button.
