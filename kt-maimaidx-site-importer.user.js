@@ -265,8 +265,10 @@ function calculateLamp(totalLamp, score) {
 		"clear": "CLEAR",
 		"fc": "FULL COMBO",
 		"fcplus": "FULL COMBO+",
+		"fcp": "FULL COMBO+",
 		"ap": "ALL PERFECT",
 		"applus": "ALL PERFECT+",
+		"app": "ALL PERFECT+",
 	}
 	let lamp = null;
 	if (totalLamp[1] === "fc_dummy") {
@@ -309,6 +311,10 @@ function executeRecentImport() {
 		}
 
 		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText
+
+		if (scoreData.identifier === "　") {
+			scoreData.identifier = ""
+		}
 
 		const style = e.querySelector(".playlog_music_kind_icon").src
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "").replace(".png", "")
@@ -399,59 +405,81 @@ function warnPbImport() {
 	  sessions. Only import PBs <em>after</em> importing recent scores.
 	</p>
   `
-	document.querySelector(".playdata__tab").insertAdjacentHTML("afterend", pbWarning)
+	document.querySelector("#kt-import-button").insertAdjacentHTML("afterend", pbWarning)
 
 }
 
-// TODO: import PBs
 function executePBImport() {
-	// https://github.com/shimmand/waccaSupportTools/blob/main/analyzePlayData/main.js
-
-	// #pushobj > section > div.contents-wrap > div.playdata__score-list > ul > li:nth-child(any)
-	const songs = document.querySelectorAll("li.item")
 	let scoresList = []
 
-	songs.forEach(e => {
-		const title = e.querySelector(".playdata__score-list__song-info__name").innerText
-		const levels = e.querySelectorAll(".playdata__score-list__song-info__lv")
-		const scores = e.querySelectorAll(".playdata__score-list__song-info__score")
-		const lamps = e.querySelectorAll(".playdata__score-list__icon")
+	for (let i = 1; i < 24; i++) {
+		let url = `https://maimaidx-eng.com/maimai-mobile/record/musicLevel/search/?level=${i}`
+		let xhr = new XMLHttpRequest()	
+		xhr.open("GET", url, false)
+		xhr.onload = () => {
+			let parser = new DOMParser()
+			let doc = parser.parseFromString(xhr.response, "text/html")
 
-		// Iterate through the 4 difficulties (all 4 should always be present).
-		for (let i = 0; i < 4; i++) {
-			if (i >= levels.length) {
-				console.warn(`Unexpected import error: only ${levels.length} levels detected for ${title}`)
-			}
-			if (i >= scores.length) {
-				console.warn(`Unexpected import error: only ${scores.length} scores detected for ${title}`)
-			}
-			if (i >= lamps.length) {
-				console.warn(`Unexpected import error: only ${lamps.length} lamps detected for ${title}`)
-			}
+			const songs = doc.querySelectorAll(".pointer.w_450.m_15.p_3.f_0")
 
-			// This includes the grade img and the lamp img
-			const lampNodes = Array.from(lamps[i].querySelectorAll("img"))
-			if (lampNodes.find(n => n.alt === "noRate")) {
-				// This indicates that the chart has not been played
-				continue
-			}
+			songs.forEach(e => {
+				scoreData = {
+					score: 0,
+					lamp: "",
+					matchType: "songTitle",
+					identifier: "",
+					difficulty: "",
+				}
 
-			const score = Number(scores[i].innerText.match(/[0-9]+/)[0])
+				scoreData.identifier = e.querySelector(".music_name_block.t_l.f_13.break").innerText
 
-			const lampImg = lampNodes.find(n => n.alt === "achieveimage")
-			const lamp = calculateLamp(lampImg, score)
+				if (scoreData.identifier === "　") {
+					scoreData.identifier = ""
+				}
 
-			const difficulty = levels[i].innerText.match(/NORMAL|HARD|EXPERT|INFERNO/)[0]
+				scoreData.difficulty = e.querySelector(".h_20.f_l").src
+					.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "")
+					.replace(".png", "")
+				scoreData.difficulty = scoreData.difficulty.replace(scoreData.difficulty[0], scoreData.difficulty[0].toUpperCase())
 
-			scoresList.push({
-				score,
-				lamp,
-				matchType: "songTitle",
-				identifier: title,
-				difficulty
+				const style = e.querySelector(".music_kind_icon.f_r").src
+					.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "")
+					.replace(".png", "")
+
+				if (scoreData.difficulty === "Remaster") {
+					scoreData.difficulty = "Re:Master"
+				}
+
+				if (style === "dx") {
+					scoreData.difficulty = "DX " + scoreData.difficulty
+				}
+
+				const scoreElem = e.querySelector(".music_score_block.w_120.t_r.f_l.f_12")
+				if (scoreElem === null) {
+					return
+				}
+				scoreData.score = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
+
+				const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
+					.replace("https://maimaidx-eng.com/maimai-mobile/img/music_icon_", "")
+					.replace(".png?ver=1.25", "")
+
+				if (lampElem === "back") {
+					if (scoreData.score >= 80) {
+						scoreData.lamp = "CLEAR"
+					} else {
+						scoreData.lamp = "FAILED"
+					}
+				} else {
+					const totalLamp = ["", lampElem]
+					scoreData.lamp = calculateLamp(totalLamp, scoreData.score)
+				}
+
+				scoresList.push(scoreData)
 			})
 		}
-	})
+		xhr.send("")
+	}
 
 	document.querySelector("#kt-import-pb-warning").remove()
 	submitScores(scoresList)
@@ -466,14 +494,18 @@ function executeDanImport() {
 		danNumber = danNumber - 1;
 	}
 
-    submitScores([], danNumber)
+	submitScores([], danNumber)
 }
 
 console.log("running")
 
 switch (location.pathname) {
 	case "/maimai-mobile/record/musicGenre/":
-		// insertImportButton("IMPORT ALL PBs", warnPbImport)
+	case "/maimai-mobile/record/musicWord/":
+	case "/maimai-mobile/record/musicLevel/":
+	case "/maimai-mobile/record/musicVersion/":
+	case "/maimai-mobile/record/musicSort/":
+		insertImportButton("IMPORT ALL PBs", warnPbImport)
 		break
 
 	case "/maimai-mobile/record/":
