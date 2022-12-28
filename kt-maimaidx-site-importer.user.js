@@ -4,7 +4,6 @@
 // @grant	 GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
 // @author	 j1nxie 
-// @require  https://code.jquery.com/jquery-3.6.3.slim.min.js
 // @include  https://maimaidx-eng.com/maimai-mobile/*
 // ==/UserScript==
 
