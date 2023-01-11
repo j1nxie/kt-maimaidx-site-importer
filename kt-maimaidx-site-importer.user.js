@@ -108,7 +108,7 @@ function addNav() {
 
 	const navPb = document.createElement("a")
 	navPb.href = "/maimai-mobile/record/musicGenre/"
-	const navPbText = "Jump to PB import (WIP - unimplemented)"
+	const navPbText = "Jump to PB import"
 	navPb.append(navPbText)
 	navPb.append(document.createElement("br"))
 	navHtml.append(navPb)
