@@ -217,11 +217,11 @@ async function submitScores(scores, dan) {
 			14: "SHINDAN_4",
 			15: "SHINDAN_5",
 			16: "SHINDAN_6",
-			18: "SHINDAN_7",
-			19: "SHINDAN_8",
-			20: "SHINDAN_9",
-			21: "SHINDAN_10",
-			22: "SHINKAIDEN",
+			17: "SHINDAN_7",
+			18: "SHINDAN_8",
+			19: "SHINDAN_9",
+			20: "SHINDAN_10",
+			21: "SHINKAIDEN",
 		}[dan]
 	}
 
@@ -276,7 +276,7 @@ function calculateLamp(totalLamp, score) {
 		lamp = lampMap[totalLamp[1]]
 	}
 
-	if (lamp === null) {
+	if (lamp === null || lamp === undefined) {
 		lamp = "FAILED"
 	}
 
@@ -333,8 +333,13 @@ function executeRecentImport() {
 			.replace('<span class="f_20">', '').replace("</span>", "")
 		scoreData.score = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0])
 
-		const clearStatus = e.querySelector(".w_80.f_r").src
-			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
+		const clearStatusElement = e.querySelector(".w_80.f_r")
+        let clearStatus = null
+        if (clearStatusElement !== null) {
+            clearStatus = clearStatusElement.src
+                .replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
+        }
+
 		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.25", "")
 		const totalLamp = [clearStatus, lampStatus]
