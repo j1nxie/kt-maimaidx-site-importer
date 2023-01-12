@@ -334,10 +334,10 @@ function executeRecentImport() {
 		scoreData.score = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0])
 
 		const clearStatusElement = e.querySelector(".w_80.f_r")
-        let clearStatus = null
-        if (clearStatusElement !== null) {
-            clearStatus = clearStatusElement.src
-                .replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
+		let clearStatus = null
+		if (clearStatusElement !== null) {
+			clearStatus = clearStatusElement.src
+				.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
         }
 
 		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
