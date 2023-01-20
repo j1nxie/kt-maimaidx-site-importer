@@ -341,7 +341,7 @@ function executeRecentImport() {
 		}
 
 		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
-			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.25", "")
+			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.30", "")
 		const totalLamp = [clearStatus, lampStatus]
 		scoreData.lamp = calculateLamp(totalLamp, scoreData.score)
 
@@ -466,7 +466,7 @@ function executePBImport() {
 
 				const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
 					.replace("https://maimaidx-eng.com/maimai-mobile/img/music_icon_", "")
-					.replace(".png?ver=1.25", "")
+					.replace(".png?ver=1.30", "")
 
 				if (lampElem === "back") {
 					if (scoreData.score >= 80) {
