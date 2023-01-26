@@ -3,7 +3,7 @@
 // @version  1.0.0
 // @grant	 GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
-// @author	 j1nxie 
+// @author	 j1nxie
 // @include  https://maimaidx-eng.com/maimai-mobile/*
 // ==/UserScript==
 
@@ -289,7 +289,7 @@ function executeRecentImport() {
 
 	scoresElems.forEach(e => {
 		let scoreData = {
-			score: 0,
+			percent: 0,
 			lamp: "",
 			matchType: "songTitle",
 			identifier: "",
@@ -331,7 +331,7 @@ function executeRecentImport() {
 
 		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r").innerHTML
 			.replace('<span class="f_20">', '').replace("</span>", "")
-		scoreData.score = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0])
+		scoreData.percent = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0])
 
 		const clearStatusElement = e.querySelector(".w_80.f_r")
 		let clearStatus = null
@@ -428,7 +428,7 @@ function executePBImport() {
 
 			songs.forEach(e => {
 				scoreData = {
-					score: 0,
+					percent: 0,
 					lamp: "",
 					matchType: "songTitle",
 					identifier: "",
@@ -462,7 +462,7 @@ function executePBImport() {
 				if (scoreElem === null) {
 					return
 				}
-				scoreData.score = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
+				scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
 
 				const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
 					.replace("https://maimaidx-eng.com/maimai-mobile/img/music_icon_", "")
