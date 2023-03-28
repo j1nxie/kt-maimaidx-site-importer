@@ -94,7 +94,7 @@ function addNav() {
 		navHtml.append(navRecent)
 
 		const navPb = document.createElement("a")
-		const navPbText = "Import personal bests"
+		const navPbText = "Import all PBs"
 		navPb.onclick = executePBImport;
 		navPb.append(navPbText)
 		navPb.append(document.createElement("br"))

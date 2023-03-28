@@ -9,9 +9,15 @@ Import scores from maimaidx-eng.com/maimai-mobile to Kamaitachi
 - [x] Import dan status
 
 ## Installation
+### With a userscript manager
 
 1. Install a userscript manager (e.g. Greasemonkey or Tampermonkey).
-1. Click [here](https://github.com/j1nxie/kt-maimaidx-site-importer/raw/main/kt-maimaidx-site-importer.user.js).
+2. Click [here](https://github.com/j1nxie/kt-maimaidx-site-importer/raw/main/kt-maimaidx-site-importer.user.js).
+
+### With a bookmarklet
+(view this site from <https://beerpiss.github.io/kt-maimaidx-score-importer>)
+
+1. Bookmark this link by dragging it to the bookmarks bar: [Kamaitachi maimaiDX Importer](javascript:void(function(d){if(d.location.host==='maimaidx-eng.com')document.body.appendChild(document.createElement('script')).src='https://beerpiss.github.io/kt-maimaidx-score-importer/kt-maimaidx-score-importer.user.js'})(document);).
 
 ## Usage
 
