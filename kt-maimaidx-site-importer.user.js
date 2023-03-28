@@ -421,16 +421,13 @@ async function executePBImport() {
 				lamp: "",
 				matchType: "songTitle",
 				identifier: "",
-				difficulty: "",
+				difficulty: getDifficulty(e, ".h_20.f_l", getChartType(e)),
 			}
 
 			scoreData.identifier = e.querySelector(".music_name_block.t_l.f_13.break").innerText
-
 			if (scoreData.identifier === "　") {
 				scoreData.identifier = ""
 			}
-
-			scoreData.difficulty = getDifficulty(e, ".h_20.f_l", getChartType(e))
 
 			const scoreElem = e.querySelector(".music_score_block.w_120.t_r.f_l.f_12")
 			if (scoreElem === null) {
@@ -441,14 +438,13 @@ async function executePBImport() {
 			const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
 				.replace("https://maimaidx-eng.com/maimai-mobile/img/music_icon_", "")
 				.replace(".png?ver=1.30", "")
-			
 			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent)
 
 			scoresList.push(scoreData)
 		})
 	}
 
-	document.querySelector("#kt-import-pb-warning").remove();
+	document.querySelector("#kt-import-pb-warning")?.remove();
 	submitScores(scoresList);
 }
 
