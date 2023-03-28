@@ -4,7 +4,7 @@ export default {
   input: 'kt-maimaidx-site-importer.user.js',
   output: {
     file: 'kt-maimaidx-site-importer.min.js',
-    format: 'cjs'
+    format: 'iife'
   },
   plugins: [terser()]
 };
