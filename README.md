@@ -17,7 +17,7 @@ Import scores from maimaidx-eng.com/maimai-mobile to Kamaitachi
 ### With a bookmarklet
 (view this site from <https://beerpiss.github.io/kt-maimaidx-site-importer>)
 
-1. Bookmark this link by dragging it to the bookmarks bar: [Kamaitachi maimaiDX Importer](javascript:void(function(d){if(d.location.host==='maimaidx-eng.com')document.body.appendChild(document.createElement('script')).src='https://beerpiss.github.io/kt-maimaidx-site-importer/kt-maimaidx-score-importer.user.js'})(document);).
+1. Bookmark this link by dragging it to the bookmarks bar: [Kamaitachi maimaiDX Importer](javascript:void(function(d){if(d.location.host==='maimaidx-eng.com')document.body.appendChild(document.createElement('script')).src='https://beerpiss.github.io/kt-maimaidx-site-importer/kt-maimaidx-site-importer.user.js'})(document);).
 
 ## Usage
 
