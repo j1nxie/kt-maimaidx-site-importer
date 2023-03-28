@@ -1,0 +1,17 @@
+{
+  "name": "kt-maimaidx-site-importer",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c rollup.config.js"
+  },
+  "keywords": [],
+  "author": "j1nxie, beerpsi",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@rollup/plugin-terser": "~0.4.0",
+    "rollup": "~3.20.2"
+  }
+}
