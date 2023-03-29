@@ -405,7 +405,7 @@ async function executeRecentImport(docu = document) {
 function warnPbImport() {
 	document.querySelector("#kt-import-button").remove()
 
-	insertImportButton("Confirm DANGEROUS operation", executePBImport)
+	insertImportButton("Confirm DANGEROUS operation", async () => await executePBImport())
 	const pbWarning = `
 	<p id="kt-import-pb-warning" class="p_10" style="text-align: center; background-color: #fff">
 	  <span style="color: #f00">WARNING!</span>
@@ -482,7 +482,7 @@ switch (location.pathname) {
 		break
 
 	case "/maimai-mobile/record/":
-		insertImportButton("IMPORT RECENT SCORES", executeRecentImport)
+		insertImportButton("IMPORT RECENT SCORES", async () => await executeRecentImport(document))
 		break
 
 	case "/maimai-mobile/home/":
