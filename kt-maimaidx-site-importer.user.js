@@ -71,7 +71,7 @@ function addNav() {
 	const apiKeyText = "You don't have an API key set up. Please set up an API key before proceeding."
 	const apiKeyParagraph = document.createElement("p")
 
-	if (!hasApiKey) {	
+	if (!hasApiKey) {
 		apiKeyParagraph.append(document.createTextNode(apiKeyText))
 		apiKeyParagraph.append(document.createElement("br"))
 	}
@@ -82,7 +82,7 @@ function addNav() {
 	apiKeySetup.id = "setup-api-key-onclick"
 	apiKeySetup.append(document.createTextNode(apiKeyLink))
 	apiKeySetup.onclick = setupApiKey
-	
+
 	apiKeyParagraph.append(apiKeySetup)
 
 	const navHtml = document.createElement("div")
@@ -111,7 +111,7 @@ function addNav() {
 		navDans.onclick = executeDanImport;
 		navDans.append(navDansText)
 		navHtml.append(navDans)
-	}	
+	}
 	topNode.append(navHtml)
 	topNode.id = "kt-import-status"
 }
@@ -280,12 +280,12 @@ function calculateLamp([clearStatus, lampStatus], score) {
 
 function getChartType(row) {
 	if (row.id) {
-	  // for multi-ChartType songs in song list
-	  return row.id.includes("sta_") ? "standard" : "dx";
+		// for multi-ChartType songs in song list
+		return row.id.includes("sta_") ? "standard" : "dx";
 	}
 	const chartTypeImg = row.querySelector(".music_kind_icon, .playlog_music_kind_icon")
 	if (!(chartTypeImg instanceof HTMLImageElement)) {
-	  return "dx";
+		return "dx";
 	}
 	return chartTypeImg.src
 		.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "")
@@ -294,7 +294,7 @@ function getChartType(row) {
 
 function getDifficulty(row, selector, style) {
 	let difficulty = row.querySelector(selector).src
-			.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "")
+		.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "")
 	difficulty = difficulty.replace(difficulty[0], difficulty[0].toUpperCase())
 
 	if (difficulty === "Remaster") {
@@ -380,7 +380,7 @@ async function executeRecentImport(docu = document) {
 
 		const idx = e.querySelector(".m_t_5.t_r")
 			.getElementsByTagName("input")[0].value
-		
+
 		let req = await fetch(`/maimai-mobile/record/playlogDetail/?idx=${idx}`);
 		let doc = (new DOMParser()).parseFromString(await req.text(), "text/html");
 
@@ -441,7 +441,7 @@ async function executePBImport() {
 
 			const scoreElem = e.querySelector(".music_score_block.w_120.t_r.f_l.f_12")
 			if (scoreElem === null) {
-				return 
+				return
 			}
 			scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
 
@@ -459,7 +459,7 @@ async function executePBImport() {
 }
 
 function executeDanImport() {
-	const danBadge = document.querySelector(".h_35.f_l").src 
+	const danBadge = document.querySelector(".h_35.f_l").src
 	let danNumber = Number(danBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/course/course_rank_", "")
 		.replace(".png", "").substring(0, 2))
 
