@@ -117,6 +117,10 @@ function addNav() {
 }
 
 function insertImportButton(message, onClick) {
+	if (!!getApiKey() && window.confirm("You don't have an API key set up. Please set up an API key before proceeding.")) {
+		location.href = "https://maimaidx-eng.com/maimai-mobile/home/"
+	}
+
 	const importButton = document.createElement("a")
 	importButton.id = "kt-import-button"
 	importButton.classList = "music_master_btn pointer p_5 t_c f_12 f_b white"
