@@ -17,7 +17,7 @@ Import scores from maimaidx-eng.com/maimai-mobile to Kamaitachi
 ### With a bookmarklet
 (view this site from <https://j1nxie.github.io/kt-maimaidx-site-importer/>)
 
-1. Bookmark this link by dragging it to the bookmarks bar: [Kamaitachi maimaiDX Score Importer](javascript:void(function(d){if(d.location.host==='maimaidx-eng.com')document.body.appendChild(document.createElement('script')).src='https://j1nxie.github.io/kt-maimaidx-site-importer/kt-maimaidx-site-importer.user.js?t='+Math.floor(Date.now()/60000)})(document);).
+1. Bookmark this link by dragging it to the bookmarks bar: [Kamaitachi maimaiDX Score Importer](javascript:void(function(d){if(d.location.host==='maimaidx-eng.com')document.body.appendChild(document.createElement('script')).src='https://j1nxie.github.io/kt-maimaidx-site-importer/kt-maimaidx-site-importer.min.js?t='+Math.floor(Date.now()/60000)})(document);).
 
 ## Usage
 1. Go to the maimaiNET website (https://maimaidx-eng.com/maimai-mobile) and log in.
