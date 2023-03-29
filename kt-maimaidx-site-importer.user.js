@@ -117,7 +117,7 @@ function addNav() {
 }
 
 function insertImportButton(message, onClick) {
-	if (!!getApiKey() && window.confirm("You don't have an API key set up. Please set up an API key before proceeding.")) {
+	if (!getApiKey() && window.confirm("You don't have an API key set up. Please set up an API key before proceeding.")) {
 		location.href = "https://maimaidx-eng.com/maimai-mobile/home/"
 	}
 
