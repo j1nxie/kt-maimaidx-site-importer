@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name	 kt-maimaidx-site-importer
 // @version  1.0.0
+// @grant    GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
 // @author	 j1nxie, beerpsi
 // @include  https://maimaidx-eng.com/maimai-mobile/*
+// @require  https://cdn.jsdelivr.net/npm/@trim21/gm-fetch
 // ==/UserScript==
 
 // TODO: Error handling system
@@ -25,6 +27,10 @@ const KT_BASE_URL = KT_CONFIGS[KT_SELECTED_CONFIG].baseUrl
 const KT_CLIENT_ID = KT_CONFIGS[KT_SELECTED_CONFIG].clientId
 const LS_API_KEY_KEY = "__ktimport__api-key"
 const DIFFICULTIES = ["BASIC", "ADVANCED", "EXPERT", "MASTER", "Re:MASTER"]
+
+if (typeof GM_fetch !== 'undefined') {
+	fetch = GM_fetch
+}
 
 function getApiKey() {
 	return localStorage.getItem(`${LS_API_KEY_KEY}_${KT_SELECTED_CONFIG}`)
