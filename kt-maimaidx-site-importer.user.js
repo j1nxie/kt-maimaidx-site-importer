@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name	 kt-maimaidx-site-importer
 // @version  1.0.0
-// @grant	 GM.xmlHttpRequest
+// @grant    GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
-// @author	 j1nxie
+// @author	 j1nxie, beerpsi
 // @include  https://maimaidx-eng.com/maimai-mobile/*
+// @require  https://cdn.jsdelivr.net/npm/@trim21/gm-fetch
 // ==/UserScript==
 
 // TODO: Error handling system
@@ -25,15 +26,10 @@ const KT_CONFIGS = {
 const KT_BASE_URL = KT_CONFIGS[KT_SELECTED_CONFIG].baseUrl
 const KT_CLIENT_ID = KT_CONFIGS[KT_SELECTED_CONFIG].clientId
 const LS_API_KEY_KEY = "__ktimport__api-key"
+const DIFFICULTIES = ["BASIC", "ADVANCED", "EXPERT", "MASTER", "Re:MASTER"]
 
-function requestPromise(details) {
-	return new Promise((resolve, reject) => GM.xmlHttpRequest({
-		responseType: "json",
-		onload: resolve,
-		onabort: reject,
-		onerror: reject,
-		...details
-	}))
+if (typeof GM_fetch !== 'undefined') {
+	fetch = GM_fetch
 }
 
 function getApiKey() {
@@ -72,62 +68,63 @@ function addNav() {
 	const topNode = document.querySelectorAll(".comment_block.break.f_l.f_12")[0]
 	const hasApiKey = !!getApiKey()
 
+	const apiKeyText = "You don't have an API key set up. Please set up an API key before proceeding."
 	const apiKeyParagraph = document.createElement("p")
-	let apiKeyText = "You don't have an API key set up. Please \"Set up an API Key\" before proceeding."
 
-	if (hasApiKey) {
-		apiKeyText = ""
-	}
-
-	apiKeyParagraph.append(document.createTextNode(apiKeyText))
-	if (apiKeyText != "") {
+	if (!hasApiKey) {	
+		apiKeyParagraph.append(document.createTextNode(apiKeyText))
 		apiKeyParagraph.append(document.createElement("br"))
 	}
 
-	let apiKeyLink = "Set up API Key (DO THIS FIRST)"
-
-	if (hasApiKey) {
-		apiKeyLink = "Reconfigure API Key (if broken)"
-	}
+	let apiKeyLink = hasApiKey ? "Reconfigure API key (if broken)" : "Set up API key"
 
 	const apiKeySetup = document.createElement("a")
 	apiKeySetup.id = "setup-api-key-onclick"
 	apiKeySetup.append(document.createTextNode(apiKeyLink))
-
+	apiKeySetup.onclick = setupApiKey
+	
 	apiKeyParagraph.append(apiKeySetup)
 
 	const navHtml = document.createElement("div")
 	navHtml.append(apiKeyParagraph)
+	if (hasApiKey) {
+		const navRecent = document.createElement("a")
+		const navRecentText = "Import recent scores (preferred)"
+		navRecent.onclick = async () => {
+			const req = await fetch("/maimai-mobile/record/")
+			const docu = (new DOMParser()).parseFromString(await req.text(), "text/html")
+			await executeRecentImport(docu)
+		}
+		navRecent.append(navRecentText)
+		navRecent.append(document.createElement("br"))
+		navHtml.append(navRecent)
 
-	const navRecent = document.createElement("a")
-	navRecent.href = "/maimai-mobile/record/"
-	const navRecentText = "Jump to recent score import (preferred)"
-	navRecent.append(navRecentText)
-	navRecent.append(document.createElement("br"))
-	navHtml.append(navRecent)
+		const navPb = document.createElement("a")
+		const navPbText = "Import all PBs"
+		navPb.onclick = executePBImport;
+		navPb.append(navPbText)
+		navPb.append(document.createElement("br"))
+		navHtml.append(navPb)
 
-	const navPb = document.createElement("a")
-	navPb.href = "/maimai-mobile/record/musicGenre/"
-	const navPbText = "Jump to PB import"
-	navPb.append(navPbText)
-	navPb.append(document.createElement("br"))
-	navHtml.append(navPb)
-
-	const navDans = document.createElement("a")
-	navDans.href = "/maimai-mobile/playerData/"
-	const navDansText = "Jump to dan import"
-	navDans.append(navDansText)
-	navHtml.append(navDans)
-
+		const navDans = document.createElement("a")
+		const navDansText = "Import dan"
+		navDans.onclick = executeDanImport;
+		navDans.append(navDansText)
+		navHtml.append(navDans)
+	}	
 	topNode.append(navHtml)
-
-	document.querySelector("#setup-api-key-onclick").onclick = setupApiKey
+	topNode.id = "kt-import-status"
 }
 
 function insertImportButton(message, onClick) {
+	if (!!getApiKey() && window.confirm("You don't have an API key set up. Please set up an API key before proceeding.")) {
+		location.href = "https://maimaidx-eng.com/maimai-mobile/home/"
+	}
+
 	const importButton = document.createElement("a")
 	importButton.id = "kt-import-button"
-	importButton.style = "box-shadow: 0 0 0 2px #FFF, 0 0 0 4px #9E9E9E"
+	importButton.classList = "music_master_btn pointer p_5 t_c f_12 f_b white"
+	// importButton.style = "box-shadow: 0 0 0 2px #FFF, 0 0 0 4px #9E9E9E"
 	importButton.borderRadius = "8px"
 	importButton.backgroundColor = "#F31A7D"
 	importButton.display = "block"
@@ -156,15 +153,14 @@ function updateStatus(message) {
 }
 
 async function pollStatus(url, dan) {
-	const req = await requestPromise({
+	const req = await fetch(url, {
 		method: "GET",
-		url,
 		headers: {
-			"Authorization": "Bearer " + getApiKey(),
-		},
+			"Authorization": `Bearer ${getApiKey()}`,
+		}
 	})
 
-	const body = req.response
+	const body = await req.json()
 
 	if (!body.success) {
 		updateStatus("Terminal Error: " + body.description)
@@ -237,21 +233,20 @@ async function submitScores(scores, dan) {
 
 	console.log(JSON.stringify(body))
 
-	const req = requestPromise({
+	const req = fetch(`${KT_BASE_URL}/ir/direct-manual/import`, {
 		method: "POST",
-		url: `${KT_BASE_URL}/ir/direct-manual/import`,
 		headers: {
 			"Authorization": "Bearer " + getApiKey(),
 			"Content-Type": "application/json",
 			"X-User-Intent": "true",
 		},
-		data: JSON.stringify(body)
+		body: JSON.stringify(body),
 	})
 
-	document.querySelector("#kt-import-button").remove()
+	document.querySelector("#kt-import-button")?.remove()
 	updateStatus("Submitting scores...")
 
-	const json = (await req).response
+	const json = await (await req).json()
 	// if json.success
 	const pollUrl = json.body.url
 
@@ -259,7 +254,7 @@ async function submitScores(scores, dan) {
 	pollStatus(pollUrl, dan)
 }
 
-function calculateLamp(totalLamp, score) {
+function calculateLamp([clearStatus, lampStatus], score) {
 	const lampMap = {
 		"clear": "CLEAR",
 		"fc": "FULL COMBO",
@@ -270,24 +265,55 @@ function calculateLamp(totalLamp, score) {
 		"app": "ALL PERFECT+",
 	}
 	let lamp = null;
-	if (totalLamp[1] === "fc_dummy") {
-		lamp = lampMap[totalLamp[0]]
+	if (lampStatus === "fc_dummy") {
+		lamp = lampMap[clearStatus]
 	} else {
-		lamp = lampMap[totalLamp[1]]
+		lamp = lampMap[lampStatus]
 	}
 
 	if (lamp === null || lamp === undefined) {
-		lamp = "FAILED"
+		lamp = score >= 80 ? "CLEAR" : "FAILED"
 	}
 
 	return lamp
 }
 
-function executeRecentImport() {
-	const scoresElems = document.querySelectorAll(".p_10.t_l.f_0.v_b")
+function getChartType(row) {
+	if (row.id) {
+	  // for multi-ChartType songs in song list
+	  return row.id.includes("sta_") ? "standard" : "dx";
+	}
+	const chartTypeImg = row.querySelector(".music_kind_icon, .playlog_music_kind_icon")
+	if (!(chartTypeImg instanceof HTMLImageElement)) {
+	  return "dx";
+	}
+	return chartTypeImg.src
+		.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "")
+		.replace(".png", "");
+}
+
+function getDifficulty(row, selector, style) {
+	let difficulty = row.querySelector(selector).src
+			.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "")
+	difficulty = difficulty.replace(difficulty[0], difficulty[0].toUpperCase())
+
+	if (difficulty === "Remaster") {
+		difficulty = "Re:Master"
+	}
+
+	if (style === "dx") {
+		difficulty = "DX " + difficulty
+	}
+	return difficulty;
+}
+
+async function executeRecentImport(docu = document) {
+	const scoresElems = docu.querySelectorAll(".p_10.t_l.f_0.v_b")
 	let scoresList = []
 
-	scoresElems.forEach(e => {
+	for (let i = 0; i < scoresElems.length; i++) {
+		updateStatus(`Fetching recent score ${i + 1}/${scoresElems.length}...`)
+		const e = scoresElems[i]
 		let scoreData = {
 			percent: 0,
 			lamp: "",
@@ -315,19 +341,8 @@ function executeRecentImport() {
 			scoreData.identifier = ""
 		}
 
-		const style = e.querySelector(".playlog_music_kind_icon").src
-			.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "").replace(".png", "")
-		scoreData.difficulty = e.querySelector(".playlog_diff.v_b").src
-			.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "")
-		scoreData.difficulty = scoreData.difficulty.replace(scoreData.difficulty[0], scoreData.difficulty[0].toUpperCase())
-
-		if (scoreData.difficulty === "Remaster") {
-			scoreData.difficulty = "Re:Master"
-		}
-
-		if (style === "dx") {
-			scoreData.difficulty = "DX " + scoreData.difficulty
-		}
+		const style = getChartType(e)
+		scoreData.difficulty = getDifficulty(e, ".playlog_diff.v_b", style)
 
 		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r").innerHTML
 			.replace('<span class="f_20">', '').replace("</span>", "")
@@ -339,11 +354,9 @@ function executeRecentImport() {
 			clearStatus = clearStatusElement.src
 				.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
 		}
-
 		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
 			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.30", "")
-		const totalLamp = [clearStatus, lampStatus]
-		scoreData.lamp = calculateLamp(totalLamp, scoreData.score)
+		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent)
 
 		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1]
 		// Break out pieces, put into utc string with timezone info
@@ -367,34 +380,25 @@ function executeRecentImport() {
 
 		const idx = e.querySelector(".m_t_5.t_r")
 			.getElementsByTagName("input")[0].value
+		
+		let req = await fetch(`/maimai-mobile/record/playlogDetail/?idx=${idx}`);
+		let doc = (new DOMParser()).parseFromString(await req.text(), "text/html");
 
-		let xhr = new XMLHttpRequest()
-		let url = `https://maimaidx-eng.com/maimai-mobile/record/playlogDetail/?idx=${idx}`
+		[...doc.querySelector(".playlog_notes_detail.t_r.f_l.f_11.f_b").querySelectorAll("tr")].slice(1).map((row) => {
+			scoreData.judgements.pcrit = scoreData.judgements.pcrit + Number(row.querySelectorAll("td")[0].innerHTML)
+			scoreData.judgements.perfect = scoreData.judgements.perfect + Number(row.querySelectorAll("td")[1].innerHTML)
+			scoreData.judgements.great = scoreData.judgements.great + Number(row.querySelectorAll("td")[2].innerHTML)
+			scoreData.judgements.good = scoreData.judgements.good + Number(row.querySelectorAll("td")[3].innerHTML)
+			scoreData.judgements.miss = scoreData.judgements.miss + Number(row.querySelectorAll("td")[4].innerHTML)
+		})
 
-		xhr.open("GET", url, false)
+		scoreData.hitMeta.fast = Number(doc.querySelectorAll(".w_96.f_l.t_r")[0].textContent)
+		scoreData.hitMeta.slow = Number(doc.querySelectorAll(".w_96.f_l.t_r")[1].textContent)
 
-		xhr.onload = () => {
-			console.log(`Parsing score of index ${idx}`)
-			let parser = new DOMParser();
-			let doc = parser.parseFromString(xhr.response, "text/html");
+		scoreData.hitMeta.maxCombo = Number(doc.querySelector(".f_r.f_14.white").innerHTML.match(/([0-9]+)\/([0-9]+)/)[1])
 
-			[...doc.querySelector(".playlog_notes_detail.t_r.f_l.f_11.f_b").querySelectorAll("tr")].slice(1).map((row) => {
-				scoreData.judgements.pcrit = scoreData.judgements.pcrit + Number(row.querySelectorAll("td")[0].innerHTML)
-				scoreData.judgements.perfect = scoreData.judgements.perfect + Number(row.querySelectorAll("td")[1].innerHTML)
-				scoreData.judgements.great = scoreData.judgements.great + Number(row.querySelectorAll("td")[2].innerHTML)
-				scoreData.judgements.good = scoreData.judgements.good + Number(row.querySelectorAll("td")[3].innerHTML)
-				scoreData.judgements.miss = scoreData.judgements.miss + Number(row.querySelectorAll("td")[4].innerHTML)
-			})
-
-			scoreData.hitMeta.fast = Number(doc.querySelectorAll(".w_96.f_l.t_r")[0].textContent)
-			scoreData.hitMeta.slow = Number(doc.querySelectorAll(".w_96.f_l.t_r")[1].textContent)
-
-			scoreData.hitMeta.maxCombo = Number(doc.querySelector(".f_r.f_14.white").innerHTML.match(/([0-9]+)\/([0-9]+)/)[1])
-
-			scoresList.push(scoreData)
-		}
-		xhr.send("")
-	})
+		scoresList.push(scoreData);
+	}
 	submitScores(scoresList)
 }
 
@@ -403,7 +407,7 @@ function warnPbImport() {
 
 	insertImportButton("Confirm DANGEROUS operation", executePBImport)
 	const pbWarning = `
-	<p id="kt-import-pb-warning" style="text-align: center; background-color: #fff">
+	<p id="kt-import-pb-warning" class="p_10" style="text-align: center; background-color: #fff">
 	  <span style="color: #f00">WARNING!</span>
 	  PB import is not recommended in general! PBs do not have timestamp data, and will not create
 	  sessions. Only import PBs <em>after</em> importing recent scores.
@@ -413,80 +417,45 @@ function warnPbImport() {
 
 }
 
-function executePBImport() {
-	let scoresList = []
+async function executePBImport() {
+	const scoresList = [];
 
-	for (let i = 1; i < 24; i++) {
-		let url = `https://maimaidx-eng.com/maimai-mobile/record/musicLevel/search/?level=${i}`
-		let xhr = new XMLHttpRequest()	
-		xhr.open("GET", url, false)
-		xhr.onload = () => {
-			let parser = new DOMParser()
-			let doc = parser.parseFromString(xhr.response, "text/html")
+	for (let i = 0; i < 5; i++) {
+		updateStatus(`Fetching scores for ${DIFFICULTIES[i]}...`)
+		const req = await fetch(`/maimai-mobile/record/musicGenre/search/?genre=99&diff=${i}`)
+		const doc = (new DOMParser()).parseFromString(await req.text(), "text/html");
 
-			const songs = doc.querySelectorAll(".pointer.w_450.m_15.p_3.f_0")
+		doc.querySelectorAll(".w_450.m_15.p_r.f_0").forEach(e => {
+			scoreData = {
+				percent: 0,
+				lamp: "",
+				matchType: "songTitle",
+				identifier: "",
+				difficulty: getDifficulty(e, ".h_20.f_l", getChartType(e)),
+			}
 
-			songs.forEach(e => {
-				scoreData = {
-					percent: 0,
-					lamp: "",
-					matchType: "songTitle",
-					identifier: "",
-					difficulty: "",
-				}
+			scoreData.identifier = e.querySelector(".music_name_block.t_l.f_13.break").innerText
+			if (scoreData.identifier === "　") {
+				scoreData.identifier = ""
+			}
 
-				scoreData.identifier = e.querySelector(".music_name_block.t_l.f_13.break").innerText
+			const scoreElem = e.querySelector(".music_score_block.w_120.t_r.f_l.f_12")
+			if (scoreElem === null) {
+				return 
+			}
+			scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
 
-				if (scoreData.identifier === "　") {
-					scoreData.identifier = ""
-				}
+			const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
+				.replace("https://maimaidx-eng.com/maimai-mobile/img/music_icon_", "")
+				.replace(".png?ver=1.30", "")
+			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent)
 
-				scoreData.difficulty = e.querySelector(".h_20.f_l").src
-					.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "")
-					.replace(".png", "")
-				scoreData.difficulty = scoreData.difficulty.replace(scoreData.difficulty[0], scoreData.difficulty[0].toUpperCase())
-
-				const style = e.querySelector(".music_kind_icon.f_r").src
-					.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "")
-					.replace(".png", "")
-
-				if (scoreData.difficulty === "Remaster") {
-					scoreData.difficulty = "Re:Master"
-				}
-
-				if (style === "dx") {
-					scoreData.difficulty = "DX " + scoreData.difficulty
-				}
-
-				const scoreElem = e.querySelector(".music_score_block.w_120.t_r.f_l.f_12")
-				if (scoreElem === null) {
-					return
-				}
-				scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
-
-				const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
-					.replace("https://maimaidx-eng.com/maimai-mobile/img/music_icon_", "")
-					.replace(".png?ver=1.30", "")
-
-				if (lampElem === "back") {
-					if (scoreData.score >= 80) {
-						scoreData.lamp = "CLEAR"
-					} else {
-						scoreData.lamp = "FAILED"
-					}
-				} else {
-					const totalLamp = ["", lampElem]
-					scoreData.lamp = calculateLamp(totalLamp, scoreData.score)
-				}
-
-				scoresList.push(scoreData)
-			})
-		}
-		xhr.send("")
+			scoresList.push(scoreData)
+		})
 	}
 
-	document.querySelector("#kt-import-pb-warning").remove()
-	submitScores(scoresList)
+	document.querySelector("#kt-import-pb-warning")?.remove();
+	submitScores(scoresList);
 }
 
 function executeDanImport() {

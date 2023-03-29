@@ -9,12 +9,17 @@ Import scores from maimaidx-eng.com/maimai-mobile to Kamaitachi
 - [x] Import dan status
 
 ## Installation
+### With a userscript manager
 
 1. Install a userscript manager (e.g. Greasemonkey or Tampermonkey).
-1. Click [here](https://github.com/j1nxie/kt-maimaidx-site-importer/raw/main/kt-maimaidx-site-importer.user.js).
+2. Click [here](https://github.com/j1nxie/kt-maimaidx-site-importer/raw/main/kt-maimaidx-site-importer.user.js).
+
+### With a bookmarklet
+(view this site from <https://j1nxie.github.io/kt-maimaidx-site-importer/>)
+
+1. Bookmark this link by dragging it to the bookmarks bar: [Kamaitachi maimaiDX Score Importer](javascript:void(function(d){if(d.location.host==='maimaidx-eng.com')document.body.appendChild(document.createElement('script')).src='https://j1nxie.github.io/kt-maimaidx-site-importer/kt-maimaidx-site-importer.min.js?t='+Math.floor(Date.now()/60000)})(document);).
 
 ## Usage
-
 1. Go to the maimaiNET website (https://maimaidx-eng.com/maimai-mobile) and log in.
 2. Set up your API key following the instructions you see on the page.
 3. ALWAYS IMPORT RECENT SCORES FIRST.
