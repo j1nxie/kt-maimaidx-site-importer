@@ -3,7 +3,7 @@
 // @version  1.0.0
 // @grant    GM.xmlHttpRequest
 // @connect  kamaitachi.xyz
-// @author	 j1nxie, beerpsi
+// @author	 cg505, j1nxie, beerpsi
 // @include  https://maimaidx-eng.com/maimai-mobile/*
 // @require  https://cdn.jsdelivr.net/npm/@trim21/gm-fetch
 // ==/UserScript==
