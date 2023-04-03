@@ -315,7 +315,7 @@ async function isNiconicoLink(detailIdx = null) {
 	const html = await fetch(`https://maimaidx-eng.com/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text())
 	const doc = new DOMParser().parseFromString(html, "text/html")
 	const jacket = doc.querySelector(".basic_block img")?.src
-	return jacket && isNicoNicoLinkImg(jacket)
+	return jacket ? isNicoNicoLinkImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("niconico")
 }
 
 async function executeRecentImport(docu = document) {
