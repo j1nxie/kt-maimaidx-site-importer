@@ -307,6 +307,17 @@ function getDifficulty(row, selector, style) {
 	return difficulty;
 }
 
+function isNicoNicoLinkImg(jacket) {
+	return jacket.includes("e90f79d9dcff84df")
+}
+
+async function isNiconicoLink(detailIdx = null) {
+	const html = await fetch(`https://maimaidx-eng.com/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text())
+	const doc = new DOMParser().parseFromString(html, "text/html")
+	const jacket = doc.querySelector(".basic_block img")?.src
+	return jacket ? isNicoNicoLinkImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("niconico")
+}
+
 async function executeRecentImport(docu = document) {
 	const scoresElems = docu.querySelectorAll(".p_10.t_l.f_0.v_b")
 	let scoresList = []
@@ -339,6 +350,12 @@ async function executeRecentImport(docu = document) {
 
 		if (scoreData.identifier === "　") {
 			scoreData.identifier = ""
+		}
+		if (scoreData.identifier === "Link") {
+			const jacket = e.querySelector(".p_r.f_0 img").src
+			scoreData.matchType = "tachiSongID"
+			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
+			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68"	
 		}
 
 		const style = getChartType(e)
@@ -425,7 +442,9 @@ async function executePBImport() {
 		const req = await fetch(`/maimai-mobile/record/musicGenre/search/?genre=99&diff=${i}`)
 		const doc = (new DOMParser()).parseFromString(await req.text(), "text/html");
 
-		doc.querySelectorAll(".w_450.m_15.p_r.f_0").forEach(e => {
+		const elems = doc.querySelectorAll(".w_450.m_15.p_r.f_0")
+
+		for (const e of elems) {
 			scoreData = {
 				percent: 0,
 				lamp: "",
@@ -437,6 +456,12 @@ async function executePBImport() {
 			scoreData.identifier = e.querySelector(".music_name_block.t_l.f_13.break").innerText
 			if (scoreData.identifier === "　") {
 				scoreData.identifier = ""
+			}
+			if (scoreData.identifier === "Link") {
+				const detailIdx = e.querySelector("form input[name=idx]").value
+				scoreData.matchType = "tachiSongID"
+				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
+				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68"
 			}
 
 			const scoreElem = e.querySelector(".music_score_block.w_120.t_r.f_l.f_12")
@@ -451,7 +476,7 @@ async function executePBImport() {
 			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent)
 
 			scoresList.push(scoreData)
-		})
+		}
 	}
 
 	document.querySelector("#kt-import-pb-warning")?.remove();
