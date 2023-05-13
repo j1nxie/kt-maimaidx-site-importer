@@ -445,7 +445,7 @@ async function executePBImport() {
 		const elems = doc.querySelectorAll(".w_450.m_15.p_r.f_0")
 
 		for (const e of elems) {
-			scoreData = {
+			let scoreData = {
 				percent: 0,
 				lamp: "",
 				matchType: "songTitle",
