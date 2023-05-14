@@ -466,7 +466,7 @@ async function executePBImport() {
 
 			const scoreElem = e.querySelector(".music_score_block.w_120.t_r.f_l.f_12")
 			if (scoreElem === null) {
-				return
+				continue
 			}
 			scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
 
