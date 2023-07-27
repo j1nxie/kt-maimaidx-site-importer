@@ -355,7 +355,7 @@ async function executeRecentImport(docu = document) {
 			const jacket = e.querySelector(".p_r.f_0 img").src
 			scoreData.matchType = "tachiSongID"
 			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
-			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68"	
+			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68"
 		}
 
 		const style = getChartType(e)
@@ -372,7 +372,7 @@ async function executeRecentImport(docu = document) {
 				.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
 		}
 		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
-			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.30", "")
+			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.35", "")
 		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent)
 
 		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1]
@@ -472,7 +472,7 @@ async function executePBImport() {
 
 			const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
 				.replace("https://maimaidx-eng.com/maimai-mobile/img/music_icon_", "")
-				.replace(".png?ver=1.30", "")
+				.replace(".png?ver=1.35", "")
 			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent)
 
 			scoresList.push(scoreData)
