@@ -152,7 +152,7 @@ function updateStatus(message) {
 	statusElem.innerText = message
 }
 
-async function pollStatus(url, dan) {
+async function pollStatus(url, dan, matchingClass) {
 	const req = await fetch(url, {
 		method: "GET",
 		headers: {
@@ -169,7 +169,7 @@ async function pollStatus(url, dan) {
 
 	if (body.body.importStatus === "ongoing") {
 		updateStatus("Importing scores... " + body.description + " Progress: " + body.body.progress.description)
-		setTimeout(pollStatus, 1000, url, dan)
+		setTimeout(pollStatus, 1000, url, dan, _class)
 		return
 	}
 
@@ -178,6 +178,9 @@ async function pollStatus(url, dan) {
 		let message = body.description + ` ${body.body.import.scoreIDs.length} scores`
 		if (dan) {
 			message += ` and Dan ${dan}`
+		}
+		if (_class) {
+			message += ` and Class ${matchingClass}`
 		}
 		if (body.body.import.errors.length > 0) {
 			message += `, ${body.body.import.errors.length} errors (see console log for details)`
@@ -193,7 +196,7 @@ async function pollStatus(url, dan) {
 	updateStatus(body.description)
 }
 
-async function submitScores(scores, dan) {
+async function submitScores(scores, dan, matchingClass) {
 	let classes = {}
 	if (dan) {
 		classes.dan = {
@@ -218,7 +221,39 @@ async function submitScores(scores, dan) {
 			19: "SHINDAN_9",
 			20: "SHINDAN_10",
 			21: "SHINKAIDEN",
+			22: "URAKAIDEN",
 		}[dan]
+	}
+
+	if (matchingClass) {
+		classes.matchingClass = {
+			0: "B5",
+			1: "B4",
+			2: "B3",
+			3: "B2",
+			4: "B1",
+			5: "A5",
+			6: "A4",
+			7: "A3",
+			8: "A2",
+			9: "A1",
+			10: "S5",
+			11: "S4",
+			12: "S3",
+			13: "S2",
+			14: "S1",
+			15: "SS5",
+			16: "SS4",
+			17: "SS3",
+			18: "SS2",
+			19: "SS1",
+			20: "SSS5",
+			21: "SSS4",
+			22: "SSS3",
+			23: "SSS2",
+			24: "SSS1",
+			25: "LEGEND",
+		}[matchingClass]
 	}
 
 	const body = {
@@ -251,7 +286,7 @@ async function submitScores(scores, dan) {
 	const pollUrl = json.body.url
 
 	updateStatus("Importing scores...")
-	pollStatus(pollUrl, dan)
+	pollStatus(pollUrl, dan, matchingClass)
 }
 
 function calculateLamp([clearStatus, lampStatus], score) {
@@ -492,7 +527,14 @@ function executeDanImport() {
 		danNumber = danNumber - 1;
 	}
 
-	submitScores([], danNumber)
+	submitScores([], danNumber, undefined)
+}
+
+function executeClassImport() {
+	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src
+	const classNumber = Number(classBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/class/class_rank_s_", "").replace(".png", "").substring(0, 2))
+
+	submitScores([], undefined, classNumber)
 }
 
 console.log("running")
@@ -515,6 +557,9 @@ switch (location.pathname) {
 		break
 
 	case "/maimai-mobile/playerData/":
-		insertImportButton("IMPORT DANS", executeDanImport)
+		insertImportButton("IMPORT DANS AND CLASSES", () => {
+			executeDanImport()
+			executeClassImport()
+		})
 		break
 }
