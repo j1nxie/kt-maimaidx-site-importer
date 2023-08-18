@@ -169,7 +169,7 @@ async function pollStatus(url, dan, matchingClass) {
 
 	if (body.body.importStatus === "ongoing") {
 		updateStatus("Importing scores... " + body.description + " Progress: " + body.body.progress.description)
-		setTimeout(pollStatus, 1000, url, dan, _class)
+		setTimeout(pollStatus, 1000, url, dan, matchingClass)
 		return
 	}
 
@@ -179,7 +179,7 @@ async function pollStatus(url, dan, matchingClass) {
 		if (dan) {
 			message += ` and Dan ${dan}`
 		}
-		if (_class) {
+		if (matchingClass) {
 			message += ` and Class ${matchingClass}`
 		}
 		if (body.body.import.errors.length > 0) {
