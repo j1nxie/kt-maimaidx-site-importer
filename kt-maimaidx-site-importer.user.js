@@ -456,24 +456,7 @@ async function executeRecentImport(docu = document) {
 		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent)
 
 		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1]
-		// Break out pieces, put into utc string with timezone info
-		const match = timestampElem.innerHTML.match("([0-9]{4})/([0-9]{1,2})/([0-9]{1,2}) ([0-9]{1,2}):([0-9]{2})")
-		let [_, year, month, day, hour, minute] = match
-		if (month.length === 1) {
-			month = "0" + month
-		}
-		if (day.length === 1) {
-			day = "0" + day
-		}
-
-		if (hour.length === 1) {
-			hour = "0" + hour
-		}
-		// Construct iso-8601 time
-		const isoTime = `${year}-${month}-${day}T${hour}:${minute}:00.000+09:00`
-		// Parse with Date, then get unix time
-		const date = new Date(isoTime)
-		scoreData.timeAchieved = date.valueOf()
+		scoreData.timeAchieved = parseTimestamp(timestampElem.innerHTML).valueOf();
 
 		const idx = e.querySelector(".m_t_5.t_r")
 			.getElementsByTagName("input")[0].value
