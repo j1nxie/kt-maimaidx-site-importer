@@ -25,19 +25,29 @@ const KT_CONFIGS = {
 }
 const KT_BASE_URL = KT_CONFIGS[KT_SELECTED_CONFIG].baseUrl
 const KT_CLIENT_ID = KT_CONFIGS[KT_SELECTED_CONFIG].clientId
-const LS_API_KEY_KEY = "__ktimport__api-key"
+const API_KEY = "api-key";
+const LATEST_SCORE_DATE = "latest-score-date";
 const DIFFICULTIES = ["BASIC", "ADVANCED", "EXPERT", "MASTER", "Re:MASTER"]
 
 if (typeof GM_fetch !== 'undefined') {
 	fetch = GM_fetch
 }
 
-function getApiKey() {
-	return localStorage.getItem(`${LS_API_KEY_KEY}_${KT_SELECTED_CONFIG}`)
+/**
+ * @param {string} key
+ * @returns {string | null}
+ */
+function getPreference(key) {
+	return localStorage.getItem(`__ktimport__${key}_${KT_SELECTED_CONFIG}`)
 }
 
-function setApiKey(value) {
-	return localStorage.setItem(`${LS_API_KEY_KEY}_${KT_SELECTED_CONFIG}`, value)
+/**
+ * @param {string} key
+ * @param {any} value
+ * @returns {void}
+ */
+function setPreference(key, value) {
+	return localStorage.setItem(`__ktimport__${key}_${KT_SELECTED_CONFIG}`, value.toString())
 }
 
 function setupApiKey() {
@@ -59,14 +69,14 @@ function submitApiKey(event) {
 	event.preventDefault()
 
 	const apiKey = document.querySelector("#api-key-form-key").value
-	setApiKey(apiKey)
+	setPreference(API_KEY, apiKey)
 
 	location.reload()
 }
 
 function addNav() {
 	const topNode = document.querySelectorAll(".comment_block.break.f_l.f_12")[0]
-	const hasApiKey = !!getApiKey()
+	const hasApiKey = !!getPreference(API_KEY)
 
 	const apiKeyText = "You don't have an API key set up. Please set up an API key before proceeding."
 	const apiKeyParagraph = document.createElement("p")
@@ -107,7 +117,7 @@ function addNav() {
 		navHtml.append(navPb)
 
 		const navDans = document.createElement("a")
-		const navDansText = "Import dan"
+		const navDansText = "Import dan and matching class"
 		navDans.onclick = executeDanImport;
 		navDans.append(navDansText)
 		navHtml.append(navDans)
@@ -117,7 +127,7 @@ function addNav() {
 }
 
 function insertImportButton(message, onClick) {
-	if (!getApiKey() && window.confirm("You don't have an API key set up. Please set up an API key before proceeding.")) {
+	if (!getPreference(API_KEY) && window.confirm("You don't have an API key set up. Please set up an API key before proceeding.")) {
 		location.href = "https://maimaidx-eng.com/maimai-mobile/home/"
 	}
 
@@ -152,11 +162,11 @@ function updateStatus(message) {
 	statusElem.innerText = message
 }
 
-async function pollStatus(url, dan, matchingClass) {
+async function pollStatus(url, dan, matchingClass, latestScoreDate) {
 	const req = await fetch(url, {
 		method: "GET",
 		headers: {
-			"Authorization": `Bearer ${getApiKey()}`,
+			"Authorization": `Bearer ${getPreference(API_KEY)}`,
 		}
 	})
 
@@ -187,6 +197,9 @@ async function pollStatus(url, dan, matchingClass) {
 			for (const error of body.body.import.errors) {
 				console.log(`${error.type}: ${error.message}`)
 			}
+		}
+		if (latestScoreDate) {
+			setPreference(LATEST_SCORE_DATE, latestScoreDate)
 		}
 		updateStatus(message)
 		return
@@ -256,6 +269,11 @@ async function submitScores(scores, dan, matchingClass) {
 		}[matchingClass]
 	}
 
+	if (scores.length === 0 && Object.entries(classes).length === 0) {
+		updateStatus("Nothing to import.")
+		return;
+	}
+
 	const body = {
 		meta: {
 			game: "maimaidx",
@@ -271,7 +289,7 @@ async function submitScores(scores, dan, matchingClass) {
 	const req = fetch(`${KT_BASE_URL}/ir/direct-manual/import`, {
 		method: "POST",
 		headers: {
-			"Authorization": "Bearer " + getApiKey(),
+			"Authorization": "Bearer " + getPreference(API_KEY),
 			"Content-Type": "application/json",
 			"X-User-Intent": "true",
 		},
@@ -285,8 +303,10 @@ async function submitScores(scores, dan, matchingClass) {
 	// if json.success
 	const pollUrl = json.body.url
 
+	const latestScoreDate = scores.length > 0 ? Math.max(...scores.map(s => s.timeAchieved.valueOf())) : null
+
 	updateStatus("Importing scores...")
-	pollStatus(pollUrl, dan, matchingClass)
+	pollStatus(pollUrl, dan, matchingClass, latestScoreDate)
 }
 
 function calculateLamp([clearStatus, lampStatus], score) {
@@ -353,12 +373,37 @@ async function isNiconicoLink(detailIdx = null) {
 	return jacket ? isNicoNicoLinkImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("niconico")
 }
 
+/**
+ * @param {string} timestamp
+ * @returns {Date}
+ */
+function parseTimestamp(timestamp) {
+	const match = timestamp.match("([0-9]{4})/([0-9]{1,2})/([0-9]{1,2}) ([0-9]{1,2}):([0-9]{2})")
+	let [_, year, month, day, hour, minute] = match
+
+	month = month.padStart(2, "0");
+	day = day.padStart(2, "0");
+	hour = hour.padStart(2, "0");
+
+	// Construct iso-8601 time
+	const isoTime = `${year}-${month}-${day}T${hour}:${minute}:00.000+09:00`
+	return new Date(isoTime);
+}
+
 async function executeRecentImport(docu = document) {
-	const scoresElems = docu.querySelectorAll(".p_10.t_l.f_0.v_b")
+	const latestScoreDate = Number(getPreference(LATEST_SCORE_DATE) ?? 0);
+	const scoresElems = [...docu.querySelectorAll(".p_10.t_l.f_0.v_b")]
+		.filter(e => parseTimestamp(e.querySelector(".sub_title .v_b:not(.red)").innerHTML).valueOf() > latestScoreDate);
+
+	let sinceDateString = "..."
+	if (latestScoreDate > 0) {
+		sinceDateString = ` since ${new Date(latestScoreDate).toLocaleString()}...`;
+	}
+
 	let scoresList = []
 
 	for (let i = 0; i < scoresElems.length; i++) {
-		updateStatus(`Fetching recent score ${i + 1}/${scoresElems.length}...`)
+		updateStatus(`Fetching recent score ${i + 1}/${scoresElems.length}${sinceDateString}`)
 		const e = scoresElems[i]
 		let scoreData = {
 			percent: 0,
