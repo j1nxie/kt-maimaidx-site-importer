@@ -209,7 +209,9 @@ async function pollStatus(url, dan, matchingClass, latestScoreDate = null) {
 	updateStatus(body.description)
 }
 
-async function submitScores(scores, dan, matchingClass) {
+async function submitScores(options) {
+	const { scores, dan, matchingClass, saveLatestTimestamp } = options;
+
 	let classes = {}
 	if (dan) {
 		classes.dan = {
@@ -303,7 +305,9 @@ async function submitScores(scores, dan, matchingClass) {
 	// if json.success
 	const pollUrl = json.body.url
 
-	const latestScoreDate = scores.length > 0 ? Math.max(...scores.map(s => s.timeAchieved.valueOf())) : null
+	const latestScoreDate = scores.length > 0 && saveLatestTimestamp
+		? Math.max(...scores.map(s => s.timeAchieved.valueOf()))
+		: null;
 
 	updateStatus("Importing scores...")
 	pollStatus(pollUrl, dan, matchingClass, latestScoreDate)
@@ -479,7 +483,7 @@ async function executeRecentImport(docu = document) {
 
 		scoresList.push(scoreData);
 	}
-	submitScores(scoresList)
+	submitScores({ scores: scoresList, saveLatestTimestamp: true })
 }
 
 function warnPbImport() {
@@ -543,7 +547,7 @@ async function executePBImport() {
 	}
 
 	document.querySelector("#kt-import-pb-warning")?.remove();
-	submitScores(scoresList);
+	submitScores({ scores: scoresList });
 }
 
 function executeDanImport() {
@@ -555,14 +559,14 @@ function executeDanImport() {
 		danNumber = danNumber - 1;
 	}
 
-	submitScores([], danNumber, undefined)
+	submitScores({ dan: danNumber })
 }
 
 function executeClassImport() {
 	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src
 	const classNumber = Number(classBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/class/class_rank_s_", "").replace(".png", "").substring(0, 2))
 
-	submitScores([], undefined, classNumber)
+	submitScores({ matchingClass: classNumber })
 }
 
 console.log("running")
