@@ -162,7 +162,7 @@ function updateStatus(message) {
 	statusElem.innerText = message
 }
 
-async function pollStatus(url, dan, matchingClass, latestScoreDate) {
+async function pollStatus(url, dan, matchingClass, latestScoreDate = null) {
 	const req = await fetch(url, {
 		method: "GET",
 		headers: {
@@ -223,7 +223,7 @@ async function submitScores(scores, dan, matchingClass) {
 			8: "DAN_8",
 			9: "DAN_9",
 			10: "DAN_10",
-			11: "SHINSHODAN",
+			11: "SHINDAN_1",
 			12: "SHINDAN_2",
 			13: "SHINDAN_3",
 			14: "SHINDAN_4",
