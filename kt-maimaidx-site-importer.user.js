@@ -118,7 +118,7 @@ function addNav() {
 
 		const navDans = document.createElement("a")
 		const navDansText = "Import dan and matching class"
-		navDans.onclick = executeDanImport;
+		navDans.onclick = executeDanAndClassImport;
 		navDans.append(navDansText)
 		navHtml.append(navDans)
 	}
@@ -210,7 +210,7 @@ async function pollStatus(url, dan, matchingClass, latestScoreDate = null) {
 }
 
 async function submitScores(options) {
-	const { scores, dan, matchingClass, saveLatestTimestamp } = options;
+	const { scores = [], dan = null, matchingClass = null, saveLatestTimestamp = false } = options;
 
 	let classes = {}
 	if (dan) {
@@ -310,7 +310,7 @@ async function submitScores(options) {
 		: null;
 
 	updateStatus("Importing scores...")
-	pollStatus(pollUrl, dan, matchingClass, latestScoreDate)
+	pollStatus(pollUrl, dan, classes.matchingClass, latestScoreDate)
 }
 
 function calculateLamp([clearStatus, lampStatus], score) {
@@ -550,8 +550,8 @@ async function executePBImport() {
 	submitScores({ scores: scoresList });
 }
 
-function executeDanImport() {
-	const danBadge = document.querySelector(".h_35.f_l").src
+async function executeDanAndClassImport(docu = document) {
+	const danBadge = docu.querySelector(".h_35.f_l").src
 	let danNumber = Number(danBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/course/course_rank_", "")
 		.replace(".png", "").substring(0, 2))
 
@@ -559,14 +559,10 @@ function executeDanImport() {
 		danNumber = danNumber - 1;
 	}
 
-	submitScores({ dan: danNumber })
-}
+	const classBadge = docu.querySelector(".p_l_10.h_35.f_l").src
+	const classNumber = Number(classBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/class/class_rank_s_", "").replace(".png", "").substring(0, 2));
 
-function executeClassImport() {
-	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src
-	const classNumber = Number(classBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/class/class_rank_s_", "").replace(".png", "").substring(0, 2))
-
-	submitScores({ matchingClass: classNumber })
+	await submitScores({ dan: danNumber, matchingClass: classNumber })
 }
 
 console.log("running")
@@ -589,9 +585,6 @@ switch (location.pathname) {
 		break
 
 	case "/maimai-mobile/playerData/":
-		insertImportButton("IMPORT DANS AND CLASSES", () => {
-			executeDanImport()
-			executeClassImport()
-		})
+		insertImportButton("IMPORT DANS AND CLASSES", async () => await executeDanAndClassImport(document))
 		break
 }
