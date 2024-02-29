@@ -531,7 +531,7 @@ async function executePBImport() {
 				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68"
 			}
 
-			const scoreElem = e.querySelector(".music_score_block.w_120.t_r.f_l.f_12")
+			const scoreElem = e.querySelector(".music_score_block.w_112.t_r.f_l.f_12")
 			if (scoreElem === null) {
 				continue
 			}
