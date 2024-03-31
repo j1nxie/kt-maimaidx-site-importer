@@ -550,8 +550,8 @@ async function executePBImport() {
 	submitScores({ scores: scoresList });
 }
 
-async function executeDanAndClassImport(docu = document) {
-	const danBadge = docu.querySelector(".h_35.f_l").src
+async function executeDanAndClassImport() {
+	const danBadge = document.querySelector(".h_35.f_l").src
 	let danNumber = Number(danBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/course/course_rank_", "")
 		.replace(".png", "").substring(0, 2))
 
@@ -559,7 +559,7 @@ async function executeDanAndClassImport(docu = document) {
 		danNumber = danNumber - 1;
 	}
 
-	const classBadge = docu.querySelector(".p_l_10.h_35.f_l").src
+	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src
 	const classNumber = Number(classBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/class/class_rank_s_", "").replace(".png", "").substring(0, 2));
 
 	await submitScores({ dan: danNumber, matchingClass: classNumber })
