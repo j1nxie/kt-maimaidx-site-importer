@@ -19,7 +19,7 @@ const KT_CONFIGS = {
 		clientId: "CI5ba595889dca0ebf15f700291084bbf26d199ee4",
 	},
 	"prod": {
-		baseUrl: "https://kamaitachi.xyz",
+		baseUrl: "https://kamai.tachi.ac",
 		clientId: "CIaf985c87034413cd78328c9cad474ed032822125",
 	},
 }
