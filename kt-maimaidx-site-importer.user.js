@@ -2,7 +2,7 @@
 // @name	 kt-maimaidx-site-importer
 // @version  1.0.0
 // @grant    GM.xmlHttpRequest
-// @connect  kamaitachi.xyz
+// @connect  kamai.tachi.ac
 // @author	 cg505, j1nxie, beerpsi
 // @include  https://maimaidx-eng.com/maimai-mobile/*
 // @include  https://maimaidx.jp/maimai-mobile/*
