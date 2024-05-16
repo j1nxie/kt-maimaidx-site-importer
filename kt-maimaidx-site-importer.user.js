@@ -5,6 +5,7 @@
 // @connect  kamaitachi.xyz
 // @author	 cg505, j1nxie, beerpsi
 // @include  https://maimaidx-eng.com/maimai-mobile/*
+// @include  https://maimaidx.jp/maimai-mobile/*
 // @require  https://cdn.jsdelivr.net/npm/@trim21/gm-fetch
 // ==/UserScript==
 
@@ -128,7 +129,7 @@ function addNav() {
 
 function insertImportButton(message, onClick) {
 	if (!getPreference(API_KEY) && window.confirm("You don't have an API key set up. Please set up an API key before proceeding.")) {
-		location.href = "https://maimaidx-eng.com/maimai-mobile/home/"
+		location.href = "/maimai-mobile/home/"
 	}
 
 	const importButton = document.createElement("a")
@@ -347,13 +348,13 @@ function getChartType(row) {
 		return "dx";
 	}
 	return chartTypeImg.src
-		.replace("https://maimaidx-eng.com/maimai-mobile/img/music_", "")
+		.replace(`https://${location.hostname}/maimai-mobile/img/music_`, "")
 		.replace(".png", "");
 }
 
 function getDifficulty(row, selector, style) {
 	let difficulty = row.querySelector(selector).src
-		.replace("https://maimaidx-eng.com/maimai-mobile/img/diff_", "").replace(".png", "")
+		.replace(`https://${location.hostname}/maimai-mobile/img/diff_`, "").replace(".png", "")
 	difficulty = difficulty.replace(difficulty[0], difficulty[0].toUpperCase())
 
 	if (difficulty === "Remaster") {
@@ -371,7 +372,7 @@ function isNicoNicoLinkImg(jacket) {
 }
 
 async function isNiconicoLink(detailIdx = null) {
-	const html = await fetch(`https://maimaidx-eng.com/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text())
+	const html = await fetch(`https://${location.hostname}/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text())
 	const doc = new DOMParser().parseFromString(html, "text/html")
 	const jacket = doc.querySelector(".basic_block img")?.src
 	return jacket ? isNicoNicoLinkImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("niconico")
@@ -453,10 +454,10 @@ async function executeRecentImport(docu = document) {
 		let clearStatus = null
 		if (clearStatusElement !== null) {
 			clearStatus = clearStatusElement.src
-				.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png", "")
+				.replace(`https://${location.hostname}/maimai-mobile/img/playlog/`, "").replace(".png", "")
 		}
 		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
-			.replace("https://maimaidx-eng.com/maimai-mobile/img/playlog/", "").replace(".png?ver=1.35", "")
+			.replace(`https://${location.hostname}/maimai-mobile/img/playlog/`, "").replace(".png?ver=1.35", "")
 		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent)
 
 		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1]
@@ -538,7 +539,7 @@ async function executePBImport() {
 			scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
 
 			const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
-				.replace("https://maimaidx-eng.com/maimai-mobile/img/music_icon_", "")
+				.replace(`https://${location.hostname}/maimai-mobile/img/music_icon_`, "")
 				.replace(".png?ver=1.35", "")
 			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent)
 
@@ -552,7 +553,7 @@ async function executePBImport() {
 
 async function executeDanAndClassImport() {
 	const danBadge = document.querySelector(".h_35.f_l").src
-	let danNumber = Number(danBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/course/course_rank_", "")
+	let danNumber = Number(danBadge.replace(`https://${location.hostname}/maimai-mobile/img/course/course_rank_`, "")
 		.replace(".png", "").substring(0, 2))
 
 	if (danNumber > 11) {
@@ -560,7 +561,7 @@ async function executeDanAndClassImport() {
 	}
 
 	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src
-	const classNumber = Number(classBadge.replace("https://maimaidx-eng.com/maimai-mobile/img/class/class_rank_s_", "").replace(".png", "").substring(0, 2));
+	const classNumber = Number(classBadge.replace(`https://${location.hostname}/maimai-mobile/img/class/class_rank_s_`, "").replace(".png", "").substring(0, 2));
 
 	await submitScores({ dan: danNumber, matchingClass: classNumber })
 }
