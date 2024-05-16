@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name	 kt-maimaidx-site-importer
-// @version  1.0.0
+// @version  1.0.1
 // @grant    GM.xmlHttpRequest
 // @connect  kamai.tachi.ac
 // @author	 cg505, j1nxie, beerpsi
