@@ -11,9 +11,9 @@
 
 // TODO: Error handling system
 
-console.log("KTIMPORT")
+console.log("KTIMPORT");
 
-const KT_SELECTED_CONFIG = "prod"
+const KT_SELECTED_CONFIG = "prod";
 const KT_CONFIGS = {
 	"staging": {
 		baseUrl: "https://staging.kamaitachi.xyz",
@@ -23,15 +23,15 @@ const KT_CONFIGS = {
 		baseUrl: "https://kamai.tachi.ac",
 		clientId: "CIaf985c87034413cd78328c9cad474ed032822125",
 	},
-}
-const KT_BASE_URL = KT_CONFIGS[KT_SELECTED_CONFIG].baseUrl
-const KT_CLIENT_ID = KT_CONFIGS[KT_SELECTED_CONFIG].clientId
+};
+const KT_BASE_URL = KT_CONFIGS[KT_SELECTED_CONFIG].baseUrl;
+const KT_CLIENT_ID = KT_CONFIGS[KT_SELECTED_CONFIG].clientId;
 const API_KEY = "api-key";
 const LATEST_SCORE_DATE = "latest-score-date";
-const DIFFICULTIES = ["BASIC", "ADVANCED", "EXPERT", "MASTER", "Re:MASTER"]
+const DIFFICULTIES = ["BASIC", "ADVANCED", "EXPERT", "MASTER", "Re:MASTER"];
 
 if (typeof GM_fetch !== 'undefined') {
-	fetch = GM_fetch
+	fetch = GM_fetch;
 }
 
 /**
@@ -39,7 +39,7 @@ if (typeof GM_fetch !== 'undefined') {
  * @returns {string | null}
  */
 function getPreference(key) {
-	return localStorage.getItem(`__ktimport__${key}_${KT_SELECTED_CONFIG}`)
+	return localStorage.getItem(`__ktimport__${key}_${KT_SELECTED_CONFIG}`);
 }
 
 /**
@@ -48,11 +48,11 @@ function getPreference(key) {
  * @returns {void}
  */
 function setPreference(key, value) {
-	return localStorage.setItem(`__ktimport__${key}_${KT_SELECTED_CONFIG}`, value.toString())
+	return localStorage.setItem(`__ktimport__${key}_${KT_SELECTED_CONFIG}`, value.toString());
 }
 
 function setupApiKey() {
-	window.open(`${KT_BASE_URL}/client-file-flow/${KT_CLIENT_ID}`)
+	window.open(`${KT_BASE_URL}/client-file-flow/${KT_CLIENT_ID}`);
 	const inputHtml = `
 	<div id="api-key-setup" style="background-color: #fff">
 	  <form id="api-key-form">
@@ -60,107 +60,106 @@ function setupApiKey() {
 		<input type="submit" value="Save"/>
 	  </form>
 	</div>
-  `
-	document.querySelector("header").insertAdjacentHTML("afterend", inputHtml)
+	`;
+	document.querySelector("header").insertAdjacentHTML("afterend", inputHtml);
 
-	document.querySelector("#api-key-setup").addEventListener("submit", submitApiKey)
+	document.querySelector("#api-key-setup").addEventListener("submit", submitApiKey);
 }
 
 function submitApiKey(event) {
-	event.preventDefault()
+	event.preventDefault();
 
-	const apiKey = document.querySelector("#api-key-form-key").value
-	setPreference(API_KEY, apiKey)
+	const apiKey = document.querySelector("#api-key-form-key").value;
+	setPreference(API_KEY, apiKey);
 
-	location.reload()
+	location.reload();
 }
 
 function addNav() {
-	const topNode = document.querySelectorAll(".comment_block.break.f_l.f_12")[0]
-	const hasApiKey = !!getPreference(API_KEY)
+	const topNode = document.querySelectorAll(".comment_block.break.f_l.f_12")[0];
+	const hasApiKey = !!getPreference(API_KEY);
 
-	const apiKeyText = "You don't have an API key set up. Please set up an API key before proceeding."
-	const apiKeyParagraph = document.createElement("p")
+	const apiKeyText = "You don't have an API key set up. Please set up an API key before proceeding.";
+	const apiKeyParagraph = document.createElement("p");
 
 	if (!hasApiKey) {
-		apiKeyParagraph.append(document.createTextNode(apiKeyText))
-		apiKeyParagraph.append(document.createElement("br"))
+		apiKeyParagraph.append(document.createTextNode(apiKeyText));
+		apiKeyParagraph.append(document.createElement("br"));
 	}
 
-	let apiKeyLink = hasApiKey ? "Reconfigure API key (if broken)" : "Set up API key"
+	let apiKeyLink = hasApiKey ? "Reconfigure API key (if broken)" : "Set up API key";
 
-	const apiKeySetup = document.createElement("a")
-	apiKeySetup.id = "setup-api-key-onclick"
-	apiKeySetup.append(document.createTextNode(apiKeyLink))
-	apiKeySetup.onclick = setupApiKey
+	const apiKeySetup = document.createElement("a");
+	apiKeySetup.id = "setup-api-key-onclick";
+	apiKeySetup.append(document.createTextNode(apiKeyLink));
+	apiKeySetup.onclick = setupApiKey;
 
-	apiKeyParagraph.append(apiKeySetup)
+	apiKeyParagraph.append(apiKeySetup);
 
-	const navHtml = document.createElement("div")
-	navHtml.append(apiKeyParagraph)
+	const navHtml = document.createElement("div");
+	navHtml.append(apiKeyParagraph);
 	if (hasApiKey) {
-		const navRecent = document.createElement("a")
-		const navRecentText = "Import recent scores (preferred)"
+		const navRecent = document.createElement("a");
+		const navRecentText = "Import recent scores (preferred)";
 		navRecent.onclick = async () => {
-			const req = await fetch("/maimai-mobile/record/")
-			const docu = (new DOMParser()).parseFromString(await req.text(), "text/html")
-			await executeRecentImport(docu)
+			const req = await fetch("/maimai-mobile/record/");
+			const docu = (new DOMParser()).parseFromString(await req.text(), "text/html");
+			await executeRecentImport(docu);
 		}
-		navRecent.append(navRecentText)
-		navRecent.append(document.createElement("br"))
-		navHtml.append(navRecent)
+		navRecent.append(navRecentText);
+		navRecent.append(document.createElement("br"));
+		navHtml.append(navRecent);
 
-		const navPb = document.createElement("a")
-		const navPbText = "Import all PBs"
+		const navPb = document.createElement("a");
+		const navPbText = "Import all PBs";
 		navPb.onclick = executePBImport;
-		navPb.append(navPbText)
-		navPb.append(document.createElement("br"))
-		navHtml.append(navPb)
+		navPb.append(navPbText);
+		navPb.append(document.createElement("br"));
+		navHtml.append(navPb);
 
-		const navDans = document.createElement("a")
-		const navDansText = "Import dan and matching class"
+		const navDans = document.createElement("a");
+		const navDansText = "Import dan and matching class";
 		navDans.onclick = executeDanAndClassImport;
-		navDans.append(navDansText)
-		navHtml.append(navDans)
+		navDans.append(navDansText);
+		navHtml.append(navDans);
 	}
-	topNode.append(navHtml)
-	topNode.id = "kt-import-status"
+	topNode.append(navHtml);
+	topNode.id = "kt-import-status";
 }
 
 function insertImportButton(message, onClick) {
 	if (!getPreference(API_KEY) && window.confirm("You don't have an API key set up. Please set up an API key before proceeding.")) {
-		location.href = "/maimai-mobile/home/"
+		location.href = "/maimai-mobile/home/";
 	}
 
-	const importButton = document.createElement("a")
-	importButton.id = "kt-import-button"
-	importButton.classList = "music_master_btn pointer p_5 t_c f_12 f_b white"
-	// importButton.style = "box-shadow: 0 0 0 2px #FFF, 0 0 0 4px #9E9E9E"
-	importButton.borderRadius = "8px"
-	importButton.backgroundColor = "#F31A7D"
-	importButton.display = "block"
-	importButton.margin = "10px auto"
-	importButton.padding = "5px"
-	importButton.width = "fit-content"
-	importButton.append(document.createTextNode(message))
+	const importButton = document.createElement("a");
+	importButton.id = "kt-import-button";
+	importButton.classList = "music_master_btn pointer p_5 t_c f_12 f_b white";
+	importButton.borderRadius = "8px";
+	importButton.backgroundColor = "#F31A7D";
+	importButton.display = "block";
+	importButton.margin = "10px auto";
+	importButton.padding = "5px";
+	importButton.width = "fit-content";
+	importButton.append(document.createTextNode(message));
 
-	const prevElem = document.querySelectorAll(".title")[0]
-	prevElem.insertAdjacentElement("afterend", importButton)
+	const prevElem = document.querySelectorAll(".title")[0];
+	prevElem.insertAdjacentElement("afterend", importButton);
 
-	document.querySelector("#kt-import-button").onclick = onClick
+	document.querySelector("#kt-import-button").onclick = onClick;
 }
 
 function updateStatus(message) {
-	let statusElem = document.querySelector("#kt-import-status")
+	let statusElem = document.querySelector("#kt-import-status");
 	if (!statusElem) {
-		statusElem = document.createElement("p")
-		statusElem.id = "kt-import-status"
-		statusElem.style = "text-align: center; background-color: #fff;"
-		const prevElem = document.querySelectorAll(".title")[0]
-		prevElem.insertAdjacentElement("afterend", statusElem)
+		statusElem = document.createElement("p");
+		statusElem.id = "kt-import-status";
+		statusElem.style = "text-align: center; background-color: #fff;";
+		const prevElem = document.querySelectorAll(".title")[0];
+		prevElem.insertAdjacentElement("afterend", statusElem);
 	}
 
-	statusElem.innerText = message
+	statusElem.innerText = message;
 }
 
 async function pollStatus(url, dan, matchingClass, latestScoreDate = null) {
@@ -169,51 +168,51 @@ async function pollStatus(url, dan, matchingClass, latestScoreDate = null) {
 		headers: {
 			"Authorization": `Bearer ${getPreference(API_KEY)}`,
 		}
-	})
+	});
 
-	const body = await req.json()
+	const body = await req.json();
 
 	if (!body.success) {
-		updateStatus("Terminal Error: " + body.description)
-		return
+		updateStatus("Terminal Error: " + body.description);
+		return;
 	}
 
 	if (body.body.importStatus === "ongoing") {
-		updateStatus("Importing scores... " + body.description + " Progress: " + body.body.progress.description)
-		setTimeout(pollStatus, 1000, url, dan, matchingClass)
-		return
+		updateStatus("Importing scores... " + body.description + " Progress: " + body.body.progress.description);
+		setTimeout(pollStatus, 1000, url, dan, matchingClass);
+		return;
 	}
 
 	if (body.body.importStatus === "completed") {
-		console.log(body.body)
-		let message = body.description + ` ${body.body.import.scoreIDs.length} scores`
+		console.log(body.body);
+		let message = body.description + ` ${body.body.import.scoreIDs.length} scores`;
 		if (dan) {
-			message += ` and Dan ${dan}`
+			message += ` and Dan ${dan}`;
 		}
 		if (matchingClass) {
-			message += ` and Class ${matchingClass}`
+			message += ` and Class ${matchingClass}`;
 		}
 		if (body.body.import.errors.length > 0) {
-			message += `, ${body.body.import.errors.length} errors (see console log for details)`
+			message += `, ${body.body.import.errors.length} errors (see console log for details)`;
 			for (const error of body.body.import.errors) {
-				console.log(`${error.type}: ${error.message}`)
+				console.log(`${error.type}: ${error.message}`);
 			}
 		}
 		if (latestScoreDate) {
-			setPreference(LATEST_SCORE_DATE, latestScoreDate)
+			setPreference(LATEST_SCORE_DATE, latestScoreDate);
 		}
-		updateStatus(message)
-		return
+		updateStatus(message);
+		return;
 	}
 
 	// otherwise, just print the description cuz we're not sure what happened
-	updateStatus(body.description)
+	updateStatus(body.description);
 }
 
 async function submitScores(options) {
 	const { scores = [], dan = null, matchingClass = null, saveLatestTimestamp = false } = options;
 
-	let classes = {}
+	let classes = {};
 	if (dan) {
 		classes.dan = {
 			1: "DAN_1",
@@ -238,7 +237,7 @@ async function submitScores(options) {
 			20: "SHINDAN_10",
 			21: "SHINKAIDEN",
 			22: "URAKAIDEN",
-		}[dan]
+		}[dan];
 	}
 
 	if (matchingClass) {
@@ -269,11 +268,11 @@ async function submitScores(options) {
 			23: "SSS2",
 			24: "SSS1",
 			25: "LEGEND",
-		}[matchingClass]
+		}[matchingClass];
 	}
 
 	if (scores.length === 0 && Object.entries(classes).length === 0) {
-		updateStatus("Nothing to import.")
+		updateStatus("Nothing to import.");
 		return;
 	}
 
@@ -285,9 +284,9 @@ async function submitScores(options) {
 		},
 		scores,
 		classes,
-	}
+	};
 
-	console.log(JSON.stringify(body))
+	console.log(JSON.stringify(body));
 
 	const req = fetch(`${KT_BASE_URL}/ir/direct-manual/import`, {
 		method: "POST",
@@ -297,21 +296,21 @@ async function submitScores(options) {
 			"X-User-Intent": "true",
 		},
 		body: JSON.stringify(body),
-	})
+	});
 
-	document.querySelector("#kt-import-button")?.remove()
-	updateStatus("Submitting scores...")
+	document.querySelector("#kt-import-button")?.remove();
+	updateStatus("Submitting scores...");
 
-	const json = await (await req).json()
+	const json = await (await req).json();
 	// if json.success
-	const pollUrl = json.body.url
+	const pollUrl = json.body.url;
 
 	const latestScoreDate = scores.length > 0 && saveLatestTimestamp
 		? Math.max(...scores.map(s => s.timeAchieved.valueOf()))
 		: null;
 
-	updateStatus("Importing scores...")
-	pollStatus(pollUrl, dan, classes.matchingClass, latestScoreDate)
+	updateStatus("Importing scores...");
+	pollStatus(pollUrl, dan, classes.matchingClass, latestScoreDate);
 }
 
 function calculateLamp([clearStatus, lampStatus], score) {
@@ -323,19 +322,19 @@ function calculateLamp([clearStatus, lampStatus], score) {
 		"ap": "ALL PERFECT",
 		"applus": "ALL PERFECT+",
 		"app": "ALL PERFECT+",
-	}
+	};
 	let lamp = null;
 	if (lampStatus === "fc_dummy") {
-		lamp = lampMap[clearStatus]
+		lamp = lampMap[clearStatus];
 	} else {
-		lamp = lampMap[lampStatus]
+		lamp = lampMap[lampStatus];
 	}
 
 	if (lamp === null || lamp === undefined) {
-		lamp = score >= 80 ? "CLEAR" : "FAILED"
+		lamp = score >= 80 ? "CLEAR" : "FAILED";
 	}
 
-	return lamp
+	return lamp;
 }
 
 function getChartType(row) {
@@ -343,7 +342,7 @@ function getChartType(row) {
 		// for multi-ChartType songs in song list
 		return row.id.includes("sta_") ? "standard" : "dx";
 	}
-	const chartTypeImg = row.querySelector(".music_kind_icon, .playlog_music_kind_icon")
+	const chartTypeImg = row.querySelector(".music_kind_icon, .playlog_music_kind_icon");
 	if (!(chartTypeImg instanceof HTMLImageElement)) {
 		return "dx";
 	}
@@ -354,28 +353,28 @@ function getChartType(row) {
 
 function getDifficulty(row, selector, style) {
 	let difficulty = row.querySelector(selector).src
-		.replace(`https://${location.hostname}/maimai-mobile/img/diff_`, "").replace(".png", "")
-	difficulty = difficulty.replace(difficulty[0], difficulty[0].toUpperCase())
+		.replace(`https://${location.hostname}/maimai-mobile/img/diff_`, "").replace(".png", "");
+	difficulty = difficulty.replace(difficulty[0], difficulty[0].toUpperCase());
 
 	if (difficulty === "Remaster") {
-		difficulty = "Re:Master"
+		difficulty = "Re:Master";
 	}
 
 	if (style === "dx") {
-		difficulty = "DX " + difficulty
+		difficulty = "DX " + difficulty;
 	}
 	return difficulty;
 }
 
 function isNicoNicoLinkImg(jacket) {
-	return jacket.includes("e90f79d9dcff84df")
+	return jacket.includes("e90f79d9dcff84df");
 }
 
 async function isNiconicoLink(detailIdx = null) {
-	const html = await fetch(`/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text())
-	const doc = new DOMParser().parseFromString(html, "text/html")
-	const jacket = doc.querySelector(".basic_block img")?.src
-	return jacket ? isNicoNicoLinkImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("niconico")
+	const html = await fetch(`/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text());
+	const doc = new DOMParser().parseFromString(html, "text/html");
+	const jacket = doc.querySelector(".basic_block img")?.src;
+	return jacket ? isNicoNicoLinkImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("niconico");
 }
 
 /**
@@ -383,15 +382,15 @@ async function isNiconicoLink(detailIdx = null) {
  * @returns {Date}
  */
 function parseTimestamp(timestamp) {
-	const match = timestamp.match("([0-9]{4})/([0-9]{1,2})/([0-9]{1,2}) ([0-9]{1,2}):([0-9]{2})")
-	let [_, year, month, day, hour, minute] = match
+	const match = timestamp.match("([0-9]{4})/([0-9]{1,2})/([0-9]{1,2}) ([0-9]{1,2}):([0-9]{2})");
+	let [_, year, month, day, hour, minute] = match;
 
 	month = month.padStart(2, "0");
 	day = day.padStart(2, "0");
 	hour = hour.padStart(2, "0");
 
 	// Construct iso-8601 time
-	const isoTime = `${year}-${month}-${day}T${hour}:${minute}:00.000+09:00`
+	const isoTime = `${year}-${month}-${day}T${hour}:${minute}:00.000+09:00`;
 	return new Date(isoTime);
 }
 
@@ -400,16 +399,16 @@ async function executeRecentImport(docu = document) {
 	const scoresElems = [...docu.querySelectorAll(".p_10.t_l.f_0.v_b")]
 		.filter(e => parseTimestamp(e.querySelector(".sub_title .v_b:not(.red)").innerHTML).valueOf() > latestScoreDate);
 
-	let sinceDateString = "..."
+	let sinceDateString = "...";
 	if (latestScoreDate > 0) {
 		sinceDateString = ` since ${new Date(latestScoreDate).toLocaleString()}...`;
 	}
 
-	let scoresList = []
+	let scoresList = [];
 
 	for (let i = 0; i < scoresElems.length; i++) {
-		updateStatus(`Fetching recent score ${i + 1}/${scoresElems.length}${sinceDateString}`)
-		const e = scoresElems[i]
+		updateStatus(`Fetching recent score ${i + 1}/${scoresElems.length}${sinceDateString}`);
+		const e = scoresElems[i];
 		let scoreData = {
 			percent: 0,
 			lamp: "",
@@ -429,42 +428,42 @@ async function executeRecentImport(docu = document) {
 				slow: 0,
 				maxCombo: 0,
 			}
-		}
+		};
 
-		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText
+		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText;
 
 		if (scoreData.identifier === "　") {
-			scoreData.identifier = ""
+			scoreData.identifier = "";
 		}
 		if (scoreData.identifier === "Link") {
-			const jacket = e.querySelector(".p_r.f_0 img").src
-			scoreData.matchType = "tachiSongID"
+			const jacket = e.querySelector(".p_r.f_0 img").src;
+			scoreData.matchType = "tachiSongID";
 			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
-			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68"
+			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68";
 		}
 
-		const style = getChartType(e)
-		scoreData.difficulty = getDifficulty(e, ".playlog_diff.v_b", style)
+		const style = getChartType(e);
+		scoreData.difficulty = getDifficulty(e, ".playlog_diff.v_b", style);
 
 		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r").innerHTML
-			.replace('<span class="f_20">', '').replace("</span>", "")
-		scoreData.percent = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0])
+			.replace('<span class="f_20">', '').replace("</span>", "");
+		scoreData.percent = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0]);
 
-		const clearStatusElement = e.querySelector(".w_80.f_r")
-		let clearStatus = null
+		const clearStatusElement = e.querySelector(".w_80.f_r");
+		let clearStatus = null;
 		if (clearStatusElement !== null) {
 			clearStatus = clearStatusElement.src
-				.replace(`https://${location.hostname}/maimai-mobile/img/playlog/`, "").replace(".png", "")
+				.replace(`https://${location.hostname}/maimai-mobile/img/playlog/`, "").replace(".png", "");
 		}
 		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
-			.replace(`https://${location.hostname}/maimai-mobile/img/playlog/`, "").replace(".png?ver=1.35", "")
-		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent)
+			.replace(`https://${location.hostname}/maimai-mobile/img/playlog/`, "").replace(".png?ver=1.35", "");
+		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent);
 
-		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1]
+		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1];
 		scoreData.timeAchieved = parseTimestamp(timestampElem.innerHTML).valueOf();
 
 		const idx = e.querySelector(".m_t_5.t_r")
-			.getElementsByTagName("input")[0].value
+			.getElementsByTagName("input")[0].value;
 
 		let req = await fetch(`/maimai-mobile/record/playlogDetail/?idx=${idx}`);
 		let doc = (new DOMParser()).parseFromString(await req.text(), "text/html");
@@ -475,30 +474,30 @@ async function executeRecentImport(docu = document) {
 			scoreData.judgements.great = scoreData.judgements.great + Number(row.querySelectorAll("td")[2].innerHTML)
 			scoreData.judgements.good = scoreData.judgements.good + Number(row.querySelectorAll("td")[3].innerHTML)
 			scoreData.judgements.miss = scoreData.judgements.miss + Number(row.querySelectorAll("td")[4].innerHTML)
-		})
+		});
 
-		scoreData.hitMeta.fast = Number(doc.querySelectorAll(".w_96.f_l.t_r")[0].textContent)
-		scoreData.hitMeta.slow = Number(doc.querySelectorAll(".w_96.f_l.t_r")[1].textContent)
+		scoreData.hitMeta.fast = Number(doc.querySelectorAll(".w_96.f_l.t_r")[0].textContent);
+		scoreData.hitMeta.slow = Number(doc.querySelectorAll(".w_96.f_l.t_r")[1].textContent);
 
-		scoreData.hitMeta.maxCombo = Number(doc.querySelector(".f_r.f_14.white").innerHTML.match(/([0-9]+)\/([0-9]+)/)[1])
+		scoreData.hitMeta.maxCombo = Number(doc.querySelector(".f_r.f_14.white").innerHTML.match(/([0-9]+)\/([0-9]+)/)[1]);
 
 		scoresList.push(scoreData);
 	}
-	submitScores({ scores: scoresList, saveLatestTimestamp: true })
+	submitScores({ scores: scoresList, saveLatestTimestamp: true });
 }
 
 function warnPbImport() {
-	document.querySelector("#kt-import-button").remove()
+	document.querySelector("#kt-import-button").remove();
 
-	insertImportButton("Confirm DANGEROUS operation", async () => await executePBImport())
+	insertImportButton("Confirm DANGEROUS operation", async () => await executePBImport());
 	const pbWarning = `
 	<p id="kt-import-pb-warning" class="p_10" style="text-align: center; background-color: #fff">
 	  <span style="color: #f00">WARNING!</span>
 	  PB import is not recommended in general! PBs do not have timestamp data, and will not create
 	  sessions. Only import PBs <em>after</em> importing recent scores.
 	</p>
-  `
-	document.querySelector("#kt-import-button").insertAdjacentHTML("afterend", pbWarning)
+	`;
+	document.querySelector("#kt-import-button").insertAdjacentHTML("afterend", pbWarning);
 
 }
 
@@ -506,11 +505,11 @@ async function executePBImport() {
 	const scoresList = [];
 
 	for (let i = 0; i < 5; i++) {
-		updateStatus(`Fetching scores for ${DIFFICULTIES[i]}...`)
-		const req = await fetch(`/maimai-mobile/record/musicGenre/search/?genre=99&diff=${i}`)
+		updateStatus(`Fetching scores for ${DIFFICULTIES[i]}...`);
+		const req = await fetch(`/maimai-mobile/record/musicGenre/search/?genre=99&diff=${i}`);
 		const doc = (new DOMParser()).parseFromString(await req.text(), "text/html");
 
-		const elems = doc.querySelectorAll(".w_450.m_15.p_r.f_0")
+		const elems = doc.querySelectorAll(".w_450.m_15.p_r.f_0");
 
 		for (const e of elems) {
 			let scoreData = {
@@ -519,31 +518,31 @@ async function executePBImport() {
 				matchType: "songTitle",
 				identifier: "",
 				difficulty: getDifficulty(e, ".h_20.f_l", getChartType(e)),
-			}
+			};
 
-			scoreData.identifier = e.querySelector(".music_name_block.t_l.f_13.break").innerText
+			scoreData.identifier = e.querySelector(".music_name_block.t_l.f_13.break").innerText;
 			if (scoreData.identifier === "　") {
-				scoreData.identifier = ""
+				scoreData.identifier = "";
 			}
 			if (scoreData.identifier === "Link") {
-				const detailIdx = e.querySelector("form input[name=idx]").value
-				scoreData.matchType = "tachiSongID"
+				const detailIdx = e.querySelector("form input[name=idx]").value;
+				scoreData.matchType = "tachiSongID";
 				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
-				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68"
+				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68";
 			}
 
-			const scoreElem = e.querySelector(".music_score_block.w_112.t_r.f_l.f_12")
+			const scoreElem = e.querySelector(".music_score_block.w_112.t_r.f_l.f_12");
 			if (scoreElem === null) {
-				continue
+				continue;
 			}
-			scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0])
+			scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0]);
 
 			const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
 				.replace(`https://${location.hostname}/maimai-mobile/img/music_icon_`, "")
-				.replace(".png?ver=1.35", "")
-			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent)
+				.replace(".png?ver=1.35", "");
+			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent);
 
-			scoresList.push(scoreData)
+			scoresList.push(scoreData);
 		}
 	}
 
@@ -552,21 +551,21 @@ async function executePBImport() {
 }
 
 async function executeDanAndClassImport() {
-	const danBadge = document.querySelector(".h_35.f_l").src
+	const danBadge = document.querySelector(".h_35.f_l").src;
 	let danNumber = Number(danBadge.replace(`https://${location.hostname}/maimai-mobile/img/course/course_rank_`, "")
-		.replace(".png", "").substring(0, 2))
+		.replace(".png", "").substring(0, 2));
 
 	if (danNumber > 11) {
 		danNumber = danNumber - 1;
 	}
 
-	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src
+	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src;
 	const classNumber = Number(classBadge.replace(`https://${location.hostname}/maimai-mobile/img/class/class_rank_s_`, "").replace(".png", "").substring(0, 2));
 
-	await submitScores({ dan: danNumber, matchingClass: classNumber })
+	await submitScores({ dan: danNumber, matchingClass: classNumber });
 }
 
-console.log("running")
+console.log("running");
 
 switch (location.pathname) {
 	case "/maimai-mobile/record/musicGenre/":
@@ -574,18 +573,18 @@ switch (location.pathname) {
 	case "/maimai-mobile/record/musicLevel/":
 	case "/maimai-mobile/record/musicVersion/":
 	case "/maimai-mobile/record/musicSort/":
-		insertImportButton("IMPORT ALL PBs", warnPbImport)
-		break
+		insertImportButton("IMPORT ALL PBs", warnPbImport);
+		break;
 
 	case "/maimai-mobile/record/":
-		insertImportButton("IMPORT RECENT SCORES", async () => await executeRecentImport(document))
-		break
+		insertImportButton("IMPORT RECENT SCORES", async () => await executeRecentImport(document));
+		break;
 
 	case "/maimai-mobile/home/":
-		addNav()
-		break
+		addNav();
+		break;
 
 	case "/maimai-mobile/playerData/":
-		insertImportButton("IMPORT DANS AND CLASSES", async () => await executeDanAndClassImport(document))
-		break
+		insertImportButton("IMPORT DANS AND CLASSES", async () => await executeDanAndClassImport(document));
+		break;
 }
