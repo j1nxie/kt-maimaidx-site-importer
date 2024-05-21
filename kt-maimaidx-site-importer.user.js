@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name	 kt-maimaidx-site-importer
-// @version  1.0.1
+// @version  1.0.2
 // @grant    GM.xmlHttpRequest
 // @connect  kamai.tachi.ac
 // @author	 cg505, j1nxie, beerpsi
@@ -49,6 +49,14 @@ function getPreference(key) {
  */
 function setPreference(key, value) {
 	return localStorage.setItem(`__ktimport__${key}_${KT_SELECTED_CONFIG}`, value.toString());
+}
+
+/**
+ * @param {string} url 
+ * @returns {string}
+ */
+function getUrlFileNameWithoutExtension(url) {
+	return new URL(url).pathname.split("/").pop().split(".").shift();
 }
 
 function setupApiKey() {
@@ -346,14 +354,13 @@ function getChartType(row) {
 	if (!(chartTypeImg instanceof HTMLImageElement)) {
 		return "dx";
 	}
-	return chartTypeImg.src
-		.replace(`https://${location.hostname}/maimai-mobile/img/music_`, "")
-		.replace(".png", "");
+
+	return getUrlFileNameWithoutExtension(chartTypeImg.src).replace("music_", "");
 }
 
 function getDifficulty(row, selector, style) {
-	let difficulty = row.querySelector(selector).src
-		.replace(`https://${location.hostname}/maimai-mobile/img/diff_`, "").replace(".png", "");
+	let difficulty = getUrlFileNameWithoutExtension(row.querySelector(selector).src).replace("diff_", "");
+	
 	difficulty = difficulty.replace(difficulty[0], difficulty[0].toUpperCase());
 
 	if (difficulty === "Remaster") {
@@ -452,11 +459,11 @@ async function executeRecentImport(docu = document) {
 		const clearStatusElement = e.querySelector(".w_80.f_r");
 		let clearStatus = null;
 		if (clearStatusElement !== null) {
-			clearStatus = clearStatusElement.src
-				.replace(`https://${location.hostname}/maimai-mobile/img/playlog/`, "").replace(".png", "");
+			clearStatus = getUrlFileNameWithoutExtension(clearStatusElement.src);
 		}
-		const lampStatus = e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
-			.replace(`https://${location.hostname}/maimai-mobile/img/playlog/`, "").replace(".png?ver=1.35", "");
+		const lampStatus = getUrlFileNameWithoutExtension(
+			e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
+		);
 		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent);
 
 		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1];
@@ -537,9 +544,10 @@ async function executePBImport() {
 			}
 			scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0]);
 
-			const lampElem = e.querySelectorAll(".h_30.f_r")[1].src
-				.replace(`https://${location.hostname}/maimai-mobile/img/music_icon_`, "")
-				.replace(".png?ver=1.35", "");
+			const lampElem = getUrlFileNameWithoutExtension(
+				e.querySelectorAll(".h_30.f_r")[1].src
+			)
+				.replace("music_icon_", "");
 			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent);
 
 			scoresList.push(scoreData);
@@ -552,15 +560,14 @@ async function executePBImport() {
 
 async function executeDanAndClassImport() {
 	const danBadge = document.querySelector(".h_35.f_l").src;
-	let danNumber = Number(danBadge.replace(`https://${location.hostname}/maimai-mobile/img/course/course_rank_`, "")
-		.replace(".png", "").substring(0, 2));
+	let danNumber = Number(getUrlFileNameWithoutExtension(danBadge).replace("course_rank_").substring(0, 2));
 
 	if (danNumber > 11) {
 		danNumber = danNumber - 1;
 	}
 
 	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src;
-	const classNumber = Number(classBadge.replace(`https://${location.hostname}/maimai-mobile/img/class/class_rank_s_`, "").replace(".png", "").substring(0, 2));
+	const classNumber = Number(getUrlFileNameWithoutExtension(classBadge).replace("class_rank_s_").substring(0, 2));
 
 	await submitScores({ dan: danNumber, matchingClass: classNumber });
 }
