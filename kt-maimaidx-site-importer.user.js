@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name	 kt-maimaidx-site-importer
-// @version  1.0.2
+// @version  1.0.3
 // @grant    GM.xmlHttpRequest
 // @connect  kamai.tachi.ac
 // @author	 cg505, j1nxie, beerpsi
@@ -450,11 +450,23 @@ async function executeRecentImport(docu = document) {
 		}
 
 		const style = getChartType(e);
-		scoreData.difficulty = getDifficulty(e, ".playlog_diff.v_b", style);
+		const difficulty = getDifficulty(e, ".playlog_diff.v_b", style);
+
+		if (difficulty === "Utage" || difficulty === "DX Utage") {
+			console.log(`Ignoring score ${scoreData.identifier} [${difficulty}].`);
+			continue;
+		}
+
+		scoreData.difficulty = difficulty;
 
 		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r").innerHTML
 			.replace('<span class="f_20">', '').replace("</span>", "");
 		scoreData.percent = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0]);
+
+		if (scoreData.percent > 101) {
+			console.warn(`Ignoring score ${scoreData.identifier} [${difficulty}] because ${scoreData.percent} > 101%.`);
+			continue;
+		}
 
 		const clearStatusElement = e.querySelector(".w_80.f_r");
 		let clearStatus = null;
