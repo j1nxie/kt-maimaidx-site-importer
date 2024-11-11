@@ -52,7 +52,7 @@ function setPreference(key, value) {
 }
 
 /**
- * @param {string} url 
+ * @param {string} url
  * @returns {string}
  */
 function getUrlFileNameWithoutExtension(url) {
@@ -360,7 +360,7 @@ function getChartType(row) {
 
 function getDifficulty(row, selector, style) {
 	let difficulty = getUrlFileNameWithoutExtension(row.querySelector(selector).src).replace("diff_", "");
-	
+
 	difficulty = difficulty.replace(difficulty[0], difficulty[0].toUpperCase());
 
 	if (difficulty === "Remaster") {
@@ -572,14 +572,14 @@ async function executePBImport() {
 
 async function executeDanAndClassImport() {
 	const danBadge = document.querySelector(".h_35.f_l").src;
-	let danNumber = Number(getUrlFileNameWithoutExtension(danBadge).replace("course_rank_").substring(0, 2));
+	let danNumber = Number(getUrlFileNameWithoutExtension(danBadge).replace("course_rank_", "").substring(0, 2));
 
 	if (danNumber > 11) {
 		danNumber = danNumber - 1;
 	}
 
 	const classBadge = document.querySelector(".p_l_10.h_35.f_l").src;
-	const classNumber = Number(getUrlFileNameWithoutExtension(classBadge).replace("class_rank_s_").substring(0, 2));
+	const classNumber = Number(getUrlFileNameWithoutExtension(classBadge).replace("class_rank_s_", "").substring(0, 2));
 
 	await submitScores({ dan: danNumber, matchingClass: classNumber });
 }
