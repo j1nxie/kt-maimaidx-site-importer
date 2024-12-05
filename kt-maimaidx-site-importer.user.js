@@ -384,6 +384,17 @@ async function isNiconicoLink(detailIdx = null) {
 	return jacket ? isNicoNicoLinkImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("niconico");
 }
 
+function isIrodorimidoriImg(jacket) {
+	return jacket.includes("29d12992cfd1d731");
+}
+
+async function isIrodorimidoriLink(detailIdx = null) {
+	const html = await fetch(`/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text());
+	const doc = new DOMParser().parseFromString(html, "text/html");
+	const jacket = doc.querySelector(".basic_block img")?.src;
+	return jacket ? isIrodorimidoriImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("オンゲキ&CHUNITHM");
+}
+
 /**
  * @param {string} timestamp
  * @returns {Date}
@@ -447,6 +458,13 @@ async function executeRecentImport(docu = document) {
 			scoreData.matchType = "tachiSongID";
 			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
 			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68";
+		}
+		if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
+				
+			const detailIdx = e.querySelector("form input[name=idx]").value;
+			scoreData.matchType = "tachiSongID";
+			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
+			scoreData.identifier = await isIrodorimidoriLink(detailIdx) ? "461" : "1385";
 		}
 
 		const style = getChartType(e);
@@ -548,6 +566,13 @@ async function executePBImport() {
 				scoreData.matchType = "tachiSongID";
 				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
 				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68";
+			}
+			if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
+				
+				const detailIdx = e.querySelector("form input[name=idx]").value;
+				scoreData.matchType = "tachiSongID";
+				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
+				scoreData.identifier = await isIrodorimidoriLink(detailIdx) ? "461" : "1385";
 			}
 
 			const scoreElem = e.querySelector(".music_score_block.w_112.t_r.f_l.f_12");
