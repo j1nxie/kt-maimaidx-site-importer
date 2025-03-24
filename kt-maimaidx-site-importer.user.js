@@ -448,7 +448,7 @@ async function executeRecentImport(docu = document) {
 			}
 		};
 
-		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText;
+		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText.split('\n')[1];
 
 		if (scoreData.identifier === "　") {
 			scoreData.identifier = "";
