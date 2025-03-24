@@ -485,15 +485,15 @@ async function executeRecentImport(docu = document) {
 			continue;
 		}
 
-		const clearStatusElement = e.querySelector(".w_80.f_r");
-		let clearStatus = null;
-		if (clearStatusElement !== null) {
-			clearStatus = getUrlFileNameWithoutExtension(clearStatusElement.src);
-		}
+//		const clearStatusElement = e.querySelector(".w_80.f_r");
+//		let clearStatus = null;
+//		if (clearStatusElement !== null) {
+//			clearStatus = getUrlFileNameWithoutExtension(clearStatusElement.src);
+//		}
 		const lampStatus = getUrlFileNameWithoutExtension(
 			e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
 		);
-		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent);
+		scoreData.lamp = calculateLamp([null, lampStatus], scoreData.percent);
 
 		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1];
 		scoreData.timeAchieved = parseTimestamp(timestampElem.innerHTML).valueOf();
