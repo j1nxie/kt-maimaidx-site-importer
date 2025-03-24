@@ -448,7 +448,7 @@ async function executeRecentImport(docu = document) {
 			}
 		};
 
-		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText;
+		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText.split('\n')[1];
 
 		if (scoreData.identifier === "　") {
 			scoreData.identifier = "";
@@ -460,7 +460,6 @@ async function executeRecentImport(docu = document) {
 			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68";
 		}
 		if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
-				
 			const detailIdx = e.querySelector("form input[name=idx]").value;
 			scoreData.matchType = "tachiSongID";
 			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
@@ -486,15 +485,15 @@ async function executeRecentImport(docu = document) {
 			continue;
 		}
 
-		const clearStatusElement = e.querySelector(".w_80.f_r");
-		let clearStatus = null;
-		if (clearStatusElement !== null) {
-			clearStatus = getUrlFileNameWithoutExtension(clearStatusElement.src);
-		}
+//		const clearStatusElement = e.querySelector(".w_80.f_r");
+//		let clearStatus = null;
+//		if (clearStatusElement !== null) {
+//			clearStatus = getUrlFileNameWithoutExtension(clearStatusElement.src);
+//		}
 		const lampStatus = getUrlFileNameWithoutExtension(
 			e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
 		);
-		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent);
+		scoreData.lamp = calculateLamp([null, lampStatus], scoreData.percent);
 
 		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1];
 		scoreData.timeAchieved = parseTimestamp(timestampElem.innerHTML).valueOf();
@@ -568,7 +567,7 @@ async function executePBImport() {
 				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68";
 			}
 			if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
-				
+
 				const detailIdx = e.querySelector("form input[name=idx]").value;
 				scoreData.matchType = "tachiSongID";
 				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
