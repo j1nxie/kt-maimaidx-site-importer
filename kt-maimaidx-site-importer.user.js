@@ -460,7 +460,6 @@ async function executeRecentImport(docu = document) {
 			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68";
 		}
 		if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
-				
 			const detailIdx = e.querySelector("form input[name=idx]").value;
 			scoreData.matchType = "tachiSongID";
 			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
@@ -568,7 +567,7 @@ async function executePBImport() {
 				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68";
 			}
 			if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
-				
+
 				const detailIdx = e.querySelector("form input[name=idx]").value;
 				scoreData.matchType = "tachiSongID";
 				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
