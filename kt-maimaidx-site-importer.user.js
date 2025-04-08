@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name	 kt-maimaidx-site-importer
-// @version  1.0.3
+// @version  1.0.4
 // @grant    GM.xmlHttpRequest
 // @connect  kamai.tachi.ac
 // @author	 cg505, j1nxie, beerpsi
@@ -74,13 +74,35 @@ function setupApiKey() {
 	document.querySelector("#api-key-setup").addEventListener("submit", submitApiKey);
 }
 
-function submitApiKey(event) {
+async function submitApiKey(event) {
 	event.preventDefault();
 
 	const apiKey = document.querySelector("#api-key-form-key").value;
-	setPreference(API_KEY, apiKey);
 
-	location.reload();
+	if (!/^[0-9a-f]+$/gu.test(apiKey)) {
+		updateStatus("Invalid API key. Expected a hexadecimal string.");
+		return;
+	}
+
+	try {
+		updateStatus("Verifying API key. The page will automatically reload once verification is successful.");
+
+		const resp = await fetch(`${KT_BASE_URL}/api/v1/users/me`, {
+			headers: {
+				Authorization: `Bearer ${apiKey}`,
+			},
+		}).then((r) => r.json());
+
+		if (!resp.success) {
+			updateStatus(`Invalid API key: ${resp.description}`);
+			return;
+		}
+
+		setPreference(API_KEY, apiKey);
+		location.reload();
+	} catch (err) {
+		updateStatus(`Could not verify API key: ${err}`);
+	}
 }
 
 function addNav() {
@@ -110,7 +132,7 @@ function addNav() {
 		const navRecent = document.createElement("a");
 		const navRecentText = "Import recent scores (preferred)";
 		navRecent.onclick = async () => {
-			const req = await fetch("/maimai-mobile/record/");
+			const req = await fetchMaimaiNet("/maimai-mobile/record/");
 			const docu = (new DOMParser()).parseFromString(await req.text(), "text/html");
 			await executeRecentImport(docu);
 		}
@@ -378,7 +400,7 @@ function isNicoNicoLinkImg(jacket) {
 }
 
 async function isNiconicoLink(detailIdx = null) {
-	const html = await fetch(`/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text());
+	const html = await fetchMaimaiNet(`/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text());
 	const doc = new DOMParser().parseFromString(html, "text/html");
 	const jacket = doc.querySelector(".basic_block img")?.src;
 	return jacket ? isNicoNicoLinkImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("niconico");
@@ -389,7 +411,7 @@ function isIrodorimidoriImg(jacket) {
 }
 
 async function isIrodorimidoriLink(detailIdx = null) {
-	const html = await fetch(`/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text());
+	const html = await fetchMaimaiNet(`/maimai-mobile/record/musicDetail/?idx=${encodeURIComponent(detailIdx)}`).then(r => r.text());
 	const doc = new DOMParser().parseFromString(html, "text/html");
 	const jacket = doc.querySelector(".basic_block img")?.src;
 	return jacket ? isIrodorimidoriImg(jacket) : doc.querySelector(".m_10.m_t_5.t_r.f_12").innerText.includes("オンゲキ&CHUNITHM");
@@ -410,6 +432,45 @@ function parseTimestamp(timestamp) {
 	// Construct iso-8601 time
 	const isoTime = `${year}-${month}-${day}T${hour}:${minute}:00.000+09:00`;
 	return new Date(isoTime);
+}
+
+/**
+ * Requests for a site on maimai DX NET with error handling.
+ * @param {URL | string} input 
+ * @param {RequestInit} init 
+ */
+async function fetchMaimaiNet(input, init) {
+	const resp = await fetch(input, init);
+
+	if (resp.status === 503) {
+		updateStatus("maimai DX NET is currently undergoing maintenance. Please import your scores later.");
+		throw new Error("maimai DX NET is under maintenance.");
+	}
+
+	const respUrl = new URL(resp.url);
+
+	if (respUrl.pathname === "/maimai-mobile/error/") {
+		const pageText = await resp.text();
+		const document = new DOMParser().parseFromString(pageText, "text/html");
+		const errorContainer = document.querySelector(".container_red");
+		const errorCodeElement = errorContainer?.querySelector(".p_5.f_14");
+		const errorDescriptionElement = errorContainer?.querySelector(".p_5.f_12");
+
+		if (!errorCodeElement || !errorDescriptionElement) {
+			console.error(pageText);
+			updateStatus("An unknown maimai DX NET error occured.");
+			
+			throw new Error("An unknown maimai DX NET error occured.")
+		}
+
+		const errorCode = errorCodeElement.textContent?.split("：")?.[1];
+		const errorDescription = errorDescriptionElement.textContent;
+
+		updateStatus(`maimai DX NET error ${errorCode}: ${errorDescription}`);
+		throw new Error(`maimai DX NET error ${errorCode}: ${errorDescription}`);
+	}
+
+	return resp;
 }
 
 async function executeRecentImport(docu = document) {
@@ -502,7 +563,7 @@ async function executeRecentImport(docu = document) {
 		const idx = e.querySelector(".m_t_5.t_r")
 			.getElementsByTagName("input")[0].value;
 
-		let req = await fetch(`/maimai-mobile/record/playlogDetail/?idx=${idx}`);
+		let req = await fetchMaimaiNet(`/maimai-mobile/record/playlogDetail/?idx=${idx}`);
 		let doc = (new DOMParser()).parseFromString(await req.text(), "text/html");
 
 		[...doc.querySelector(".playlog_notes_detail.t_r.f_l.f_11.f_b").querySelectorAll("tr")].slice(1).map((row) => {
@@ -543,7 +604,7 @@ async function executePBImport() {
 
 	for (let i = 0; i < 5; i++) {
 		updateStatus(`Fetching scores for ${DIFFICULTIES[i]}...`);
-		const req = await fetch(`/maimai-mobile/record/musicGenre/search/?genre=99&diff=${i}`);
+		const req = await fetchMaimaiNet(`/maimai-mobile/record/musicGenre/search/?genre=99&diff=${i}`);
 		const doc = (new DOMParser()).parseFromString(await req.text(), "text/html");
 
 		const elems = doc.querySelectorAll(".w_450.m_15.p_r.f_0");
