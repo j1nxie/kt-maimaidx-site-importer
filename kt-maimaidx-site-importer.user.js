@@ -27,7 +27,6 @@ const KT_CONFIGS = {
 const KT_BASE_URL = KT_CONFIGS[KT_SELECTED_CONFIG].baseUrl;
 const KT_CLIENT_ID = KT_CONFIGS[KT_SELECTED_CONFIG].clientId;
 const API_KEY = "api-key";
-const LATEST_SCORE_DATE = "latest-score-date";
 const DIFFICULTIES = ["BASIC", "ADVANCED", "EXPERT", "MASTER", "Re:MASTER"];
 
 if (typeof GM_fetch !== 'undefined') {
@@ -192,7 +191,7 @@ function updateStatus(message) {
 	statusElem.innerText = message;
 }
 
-async function pollStatus(url, dan, matchingClass, latestScoreDate = null) {
+async function pollStatus(url, dan, matchingClass) {
 	const req = await fetch(url, {
 		method: "GET",
 		headers: {
@@ -228,9 +227,7 @@ async function pollStatus(url, dan, matchingClass, latestScoreDate = null) {
 				console.log(`${error.type}: ${error.message}`);
 			}
 		}
-		if (latestScoreDate) {
-			setPreference(LATEST_SCORE_DATE, latestScoreDate);
-		}
+
 		updateStatus(message);
 		return;
 	}
@@ -240,7 +237,7 @@ async function pollStatus(url, dan, matchingClass, latestScoreDate = null) {
 }
 
 async function submitScores(options) {
-	const { scores = [], dan = null, matchingClass = null, saveLatestTimestamp = false } = options;
+	const { scores = [], dan = null, matchingClass = null } = options;
 
 	let classes = {};
 	if (dan) {
@@ -335,15 +332,11 @@ async function submitScores(options) {
 	// if json.success
 	const pollUrl = json.body.url;
 
-	const latestScoreDate = scores.length > 0 && saveLatestTimestamp
-		? Math.max(...scores.map(s => s.timeAchieved.valueOf()))
-		: null;
-
 	updateStatus("Importing scores...");
-	pollStatus(pollUrl, dan, classes.matchingClass, latestScoreDate);
+	pollStatus(pollUrl, dan, classes.matchingClass);
 }
 
-function calculateLamp([clearStatus, lampStatus], score) {
+function calculateLamp(lampStatus, score) {
 	const lampMap = {
 		"clear": "CLEAR",
 		"fc": "FULL COMBO",
@@ -353,12 +346,7 @@ function calculateLamp([clearStatus, lampStatus], score) {
 		"applus": "ALL PERFECT+",
 		"app": "ALL PERFECT+",
 	};
-	let lamp = null;
-	if (lampStatus === "fc_dummy") {
-		lamp = lampMap[clearStatus];
-	} else {
-		lamp = lampMap[lampStatus];
-	}
+	let lamp = lampMap[lampStatus];
 
 	if (lamp === null || lamp === undefined) {
 		lamp = score >= 80 ? "CLEAR" : "FAILED";
@@ -425,8 +413,8 @@ function parseTimestamp(timestamp) {
 
 /**
  * Requests for a site on maimai DX NET with error handling.
- * @param {URL | string} input 
- * @param {RequestInit} init 
+ * @param {URL | string} input
+ * @param {RequestInit} init
  */
 async function fetchMaimaiNet(input, init) {
 	const resp = await fetch(input, init);
@@ -448,7 +436,7 @@ async function fetchMaimaiNet(input, init) {
 		if (!errorCodeElement || !errorDescriptionElement) {
 			console.error(pageText);
 			updateStatus("An unknown maimai DX NET error occured.");
-			
+
 			throw new Error("An unknown maimai DX NET error occured.")
 		}
 
@@ -463,19 +451,13 @@ async function fetchMaimaiNet(input, init) {
 }
 
 async function executeRecentImport(docu = document) {
-	const latestScoreDate = Number(getPreference(LATEST_SCORE_DATE) ?? 0);
-	const scoresElems = [...docu.querySelectorAll(".p_10.t_l.f_0.v_b")]
-		.filter(e => parseTimestamp(e.querySelector(".sub_title .v_b:not(.red)").innerHTML).valueOf() > latestScoreDate);
-
-	let sinceDateString = "...";
-	if (latestScoreDate > 0) {
-		sinceDateString = ` since ${new Date(latestScoreDate).toLocaleString()}...`;
-	}
+	const scoresElems = docu.querySelectorAll(".p_10.t_l.f_0.v_b");
 
 	let scoresList = [];
 
 	for (let i = 0; i < scoresElems.length; i++) {
-		updateStatus(`Fetching recent score ${i + 1}/${scoresElems.length}${sinceDateString}`);
+		updateStatus(`Fetching recent score ${i + 1}/${scoresElems.length}...`);
+
 		const e = scoresElems[i];
 		let scoreData = {
 			percent: 0,
@@ -498,17 +480,23 @@ async function executeRecentImport(docu = document) {
 			}
 		};
 
-		scoreData.identifier = e.querySelector(".basic_block.m_5.p_5.p_l_10.f_13.break").innerText;
+		scoreData.identifier = e
+			.querySelector(".basic_block.m_5.m_t_17.m_r_60.p_5.p_l_10.f_13.break")
+			.childNodes[2]
+			.textContent
+			.trim();
 
 		if (scoreData.identifier === "　") {
 			scoreData.identifier = "";
 		}
+
 		if (scoreData.identifier === "Link") {
-			const jacket = e.querySelector(".p_r.f_0 img").src;
+			const jacket = e.querySelector(".music_img").src;
 			scoreData.matchType = "tachiSongID";
 			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
 			scoreData.identifier = isNicoNicoLinkImg(jacket) ? "244" : "68";
 		}
+
 		if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
 			scoreData.matchType = "tachiSongID";
 			// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
@@ -525,8 +513,7 @@ async function executeRecentImport(docu = document) {
 
 		scoreData.difficulty = difficulty;
 
-		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r").innerHTML
-			.replace('<span class="f_20">', '').replace("</span>", "");
+		const scoreElem = e.querySelector(".playlog_achievement_txt.t_r").textContent;
 		scoreData.percent = parseFloat(scoreElem.match(/[0-9]+.[0-9]+/)[0]);
 
 		if (scoreData.percent > 101) {
@@ -534,18 +521,13 @@ async function executeRecentImport(docu = document) {
 			continue;
 		}
 
-		const clearStatusElement = e.querySelector(".w_80.f_r");
-		let clearStatus = null;
-		if (clearStatusElement !== null) {
-			clearStatus = getUrlFileNameWithoutExtension(clearStatusElement.src);
-		}
 		const lampStatus = getUrlFileNameWithoutExtension(
 			e.querySelector(".playlog_result_innerblock.basic_block.p_5.f_13").children[1].src
 		);
-		scoreData.lamp = calculateLamp([clearStatus, lampStatus], scoreData.percent);
+		scoreData.lamp = calculateLamp(lampStatus, scoreData.percent);
 
 		const timestampElem = e.querySelector(".sub_title.t_c.f_r.f_11").getElementsByClassName("v_b")[1];
-		scoreData.timeAchieved = parseTimestamp(timestampElem.innerHTML).valueOf();
+		scoreData.timeAchieved = parseTimestamp(timestampElem.textContent).valueOf();
 
 		const idx = e.querySelector(".m_t_5.t_r")
 			.getElementsByTagName("input")[0].value;
@@ -568,7 +550,8 @@ async function executeRecentImport(docu = document) {
 
 		scoresList.push(scoreData);
 	}
-	submitScores({ scores: scoresList, saveLatestTimestamp: true });
+
+	submitScores({ scores: scoresList });
 }
 
 function warnPbImport() {
@@ -606,15 +589,18 @@ async function executePBImport() {
 			};
 
 			scoreData.identifier = e.querySelector(".music_name_block.t_l.f_13.break").innerText;
+
 			if (scoreData.identifier === "　") {
 				scoreData.identifier = "";
 			}
+
 			if (scoreData.identifier === "Link") {
 				const detailIdx = e.querySelector("form input[name=idx]").value;
 				scoreData.matchType = "tachiSongID";
 				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
 				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68";
 			}
+
 			if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
 				scoreData.matchType = "tachiSongID";
 				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
@@ -622,16 +608,18 @@ async function executePBImport() {
 			}
 
 			const scoreElem = e.querySelector(".music_score_block.w_112.t_r.f_l.f_12");
+
 			if (scoreElem === null) {
 				continue;
 			}
+
 			scoreData.percent = parseFloat(scoreElem.innerText.match(/[0-9]+.[0-9]+/)[0]);
 
 			const lampElem = getUrlFileNameWithoutExtension(
 				e.querySelectorAll(".h_30.f_r")[1].src
 			)
 				.replace("music_icon_", "");
-			scoreData.lamp = calculateLamp(["", lampElem], scoreData.percent);
+			scoreData.lamp = calculateLamp(lampElem, scoreData.percent);
 
 			scoresList.push(scoreData);
 		}
