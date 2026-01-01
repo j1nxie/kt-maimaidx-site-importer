@@ -353,6 +353,10 @@ async function submitScores(options) {
         return;
 	}
 	
+	// Kamaitachi has received our import.
+    setPreference("scores", "[]");
+    setPreference("classes", "{}");
+	
 	if (!json.success) {
         updateStatus(
 			`Could not submit scores to Kamaitachi: ${resp.description}`,
