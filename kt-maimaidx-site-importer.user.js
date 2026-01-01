@@ -237,10 +237,28 @@ async function pollStatus(url, dan, matchingClass) {
 }
 
 async function submitScores(options) {
-	const { scores = [], dan = null, matchingClass = null } = options;
+	const { scores: newScores = [], dan = null, matchingClass = null } = options;
+    const scores = JSON.parse(getPreference("scores") ?? "[]");
+    
+    scores.push(...newScores);
+    setPreference("scores", JSON.stringify(scores));
+    
+    const storedClasses = JSON.parse(getPreference("classes") ?? "{}");
+    
+    if (dan) {
+        storedClasses.dan = storedClasses.dan ? Math.max(dan, storedClasses.dan) : dan;
+        setPreference("classes", JSON.stringify(storedClasses));
+    }
+    
+    if (matchingClass) {
+        storedClasses.matchingClass = storedClasses.matchingClass
+            ? Math.max(matchingClass, storedClasses.matchingClass)
+            : matchingClass;
+        setPreference("classes", JSON.stringify(storedClasses));
+    }
 
-	let classes = {};
-	if (dan) {
+    let classes = {};
+	if (storedClasses.dan) {
 		classes.dan = {
 			1: "DAN_1",
 			2: "DAN_2",
@@ -264,10 +282,10 @@ async function submitScores(options) {
 			20: "SHINDAN_10",
 			21: "SHINKAIDEN",
 			22: "URAKAIDEN",
-		}[dan];
+		}[storedClasses.dan];
 	}
 
-	if (matchingClass) {
+	if (storedClasses.matchingClass) {
 		classes.matchingClass = {
 			0: "B5",
 			1: "B4",
@@ -295,7 +313,7 @@ async function submitScores(options) {
 			23: "SSS2",
 			24: "SSS1",
 			25: "LEGEND",
-		}[matchingClass];
+		}[storedClasses.matchingClass];
 	}
 
 	if (scores.length === 0 && Object.entries(classes).length === 0) {
@@ -314,22 +332,34 @@ async function submitScores(options) {
 	};
 
 	console.log(JSON.stringify(body));
-
-	const req = fetch(`${KT_BASE_URL}/ir/direct-manual/import`, {
-		method: "POST",
-		headers: {
-			"Authorization": "Bearer " + getPreference(API_KEY),
-			"Content-Type": "application/json",
-			"X-User-Intent": "true",
-		},
-		body: JSON.stringify(body),
-	});
-
+	
 	document.querySelector("#kt-import-button")?.remove();
 	updateStatus("Submitting scores...");
 
-	const json = await (await req).json();
-	// if json.success
+    let json;
+	try {
+        const resp = await fetch(`${KT_BASE_URL}/ir/direct-manual/import`, {
+      		method: "POST",
+      		headers: {
+     			"Authorization": "Bearer " + getPreference(API_KEY),
+     			"Content-Type": "application/json",
+     			"X-User-Intent": "true",
+      		},
+      		body: JSON.stringify(body),
+       	});
+       	json = await resp.json();
+	} catch (e) {
+        updateStatus(`Could not submit scores to Kamaitachi: ${e}\nYour scores are saved in browser storage and will be submitted next import.`);
+        return;
+	}
+	
+	if (!json.success) {
+        updateStatus(
+			`Could not submit scores to Kamaitachi: ${resp.description}`,
+		);
+		return;
+	}
+	
 	const pollUrl = json.body.url;
 
 	updateStatus("Importing scores...");
