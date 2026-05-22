@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name	 kt-maimaidx-site-importer
-// @version  1.0.4
+// @version  1.0.5
 // @grant    GM.xmlHttpRequest
 // @connect  kamai.tachi.ac
 // @author	 cg505, j1nxie, beerpsi
@@ -630,15 +630,15 @@ async function executePBImport() {
 
 			if (scoreData.identifier === "Link") {
 				const detailIdx = e.querySelector("form input[name=idx]").value;
-				scoreData.matchType = "tachiSongID";
+				scoreData.matchType = "inGameID";
 				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
-				scoreData.identifier = await isNiconicoLink(detailIdx) ? "244" : "68";
+				scoreData.identifier = await isNiconicoLink(detailIdx) ? "383" : "131";
 			}
 
 			if (scoreData.identifier === "TRUST" || scoreData.identifier === "Trust") {
-				scoreData.matchType = "tachiSongID";
+				scoreData.matchType = "inGameID";
 				// IDs from https://github.com/TNG-dev/Tachi/blob/staging/database-seeds/collections/songs-maimaidx.json
-				scoreData.identifier = scoreData.identifier === "TRUST" ? "461" : "1385";
+				scoreData.identifier = scoreData.identifier === "TRUST" ? "695" : "11726";
 			}
 
 			const scoreElem = e.querySelector(".music_score_block.w_112.t_r.f_l.f_12");
